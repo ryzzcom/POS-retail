@@ -1,0 +1,11 @@
+export * as dashboard from "./dashboard";
+export * as salesHistory from "./sales-history";
+export * as productsInventory from "./products-inventory";
+export * as purchasesSuppliers from "./purchases-suppliers";
+export * as customers from "./customers";
+export * as loyaltyReferrals from "./loyalty-referrals";
+export * as financeExpenses from "./finance-expenses";
+export * as khataReceivables from "./khata-receivables";
+export * as reportsAnalytics from "./reports-analytics";
+export * as whatsappCampaigns from "./whatsapp-campaigns";
+export * as settings from "./settings";

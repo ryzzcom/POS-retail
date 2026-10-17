@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --brand-primary: #1e2b22;
+  --brand-accent: #c9ab6a;
+  --brand-secondary: #6b7a5e;
+
+  /* Background Colors */
+  --bg-page: #f2f2e3;
+  --bg-subtle: #e8e0cf;
+  --bg-card: #ffffff;
+  --bg-theme: #fffefa;
+
+  /* Text / Typography Colors */
+  --text-heading-primary: #1a1a1a;
+  --text-body-secondary: #62665e;
+  --text-muted: #94a3b8;
+  --text-dark-primary: #f2f2e3;
+  --text-dark-secondary: #c5cec4;
+
+  /* Border Colors */
+  --border-default: #d8d2c4;
+  --border-focus: #1e2b22;
+  --border-dark: #3a493d;
+
+  /* Status Colors */
+  --status-success: #16a34a;
+  --status-success-bg: #f0fdf4;
+  --status-warning: #f59e0b;
+  --status-warning-bg: #fffbeb;
+  --status-error: #dc2626;
+  --status-error-bg: #fef2f2;
+}
+
+@theme {
+  --font-heading: var(--font-outfit), sans-serif;
+  --font-sans: var(--font-poppins), sans-serif;
+  --font-body: var(--font-poppins), sans-serif;
+
+  /* Direct Brand Shorthands (usable across bg-*, text-*, border-*, ring-*) */
+  --color-primary: var(--brand-primary);
+  --color-accent: var(--brand-accent);
+  --color-secondary: var(--brand-secondary);
+
+  /* Background Utilities (bg-*) */
+  --color-page: var(--bg-page);
+  --color-subtle: var(--bg-subtle);
+  --color-card: var(--bg-card);
+  --color-theme: var(--bg-theme);
+  --color-bg-page: var(--bg-page);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-card: var(--bg-card);
+  --color-bg-theme: var(--bg-theme);
+
+  /* Text Utilities (text-*) */
+  --color-heading: var(--text-heading-primary);
+  --color-heading-primary: var(--text-heading-primary);
+  --color-body: var(--text-body-secondary);
+  --color-body-secondary: var(--text-body-secondary);
+  --color-muted: var(--text-muted);
+  --color-dark-primary: var(--text-dark-primary);
+  --color-dark-secondary: var(--text-dark-secondary);
+
+  /* Border & Ring Utilities (border-*, ring-*) */
+  --color-default: var(--border-default);
+  --color-border-default: var(--border-default);
+  --color-focus: var(--border-focus);
+  --color-border-focus: var(--border-focus);
+  --color-dark: var(--border-dark);
+  --color-border-dark: var(--border-dark);
+
+  /* Status Utilities (text-*, bg-*, border-*) */
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-error: var(--status-error);
+  --color-status-error-bg: var(--status-error-bg);
+}
+
+@utility border-default {
+  border-color: var(--border-default);
+}
+
+@utility border-focus {
+  border-color: var(--border-focus);
+}
+
+@utility border-dark {
+  border-color: var(--border-dark);
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-heading-primary);
+  font-family: var(--font-poppins), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-outfit), sans-serif;
+  color: var(--text-heading-primary);
+}
