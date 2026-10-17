@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <main className="min-h-screen flex items-center justify-center p-4">{children}</main>;
+  return <div className="h-screen w-full bg-page overflow-hidden">{children}</div>;
 }
