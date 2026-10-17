@@ -1,0 +1,171 @@
+import { DashboardData } from "../types/dashboard.types";
+
+export const DASHBOARD_MOCK_DATA: DashboardData = {
+  ownerName: "Ayesha",
+  greetingSubtitle: "Hover any underlined label to see how it's calculated.",
+  sales: {
+    netSales: 172300,
+    grossSales: 186450,
+    discounts: 9200,
+    returns: 4950,
+    orderCount: 41,
+    averageOrderValue: 4202,
+    trend: [
+      { hour: "11a", label: "11a", revenue: 14200 },
+      { hour: "12p", label: "12p", revenue: 19500 },
+      { hour: "1p", label: "1p", revenue: 25000 },
+      { hour: "2p", label: "2p", revenue: 32000 },
+      {
+        hour: "3p",
+        label: "3p",
+        revenue: 40000,
+        month: "Mar",
+        isFigmaHighlighted: true,
+      },
+      { hour: "4p", label: "4p", revenue: 53000 },
+      { hour: "5p", label: "5p", revenue: 76000 },
+      { hour: "6p", label: "6p", revenue: 104000 },
+      { hour: "7p", label: "7p", revenue: 139000 },
+      { hour: "8p", label: "8p", revenue: 172300 },
+    ],
+  },
+  profit: {
+    grossProfit: 67500,
+    marginPercent: 39.2,
+    cogs: 104800,
+    estimatedOperatingProfit: 46000,
+    expenses: 21500,
+    tenders: {
+      cash: 98400,
+      cardDigital: 61900,
+      onKhata: 12000,
+    },
+  },
+  financialMetrics: [
+    {
+      id: "cash-drawer",
+      label: "Cash drawer now",
+      amount: 45360,
+      explanation:
+        "Total physical cash currently present in the active POS cash drawer shift, verified after petty payouts.",
+      href: "/finance-expenses#drawer",
+    },
+    {
+      id: "bank-balance",
+      label: "Bank balance",
+      amount: 412800,
+      explanation:
+        "Combined real-time balances of connected bank accounts after card, online transfer, and merchant payouts.",
+      href: "/finance-expenses#accounts",
+    },
+    {
+      id: "petty-cash",
+      label: "Petty cash",
+      amount: 2400,
+      explanation:
+        "Float cash kept at the reception counter for minor, immediate operational purchases.",
+      href: "/finance-expenses#petty",
+    },
+    {
+      id: "customers-owe",
+      label: "Customers owe you",
+      amount: 68860,
+      explanation:
+        "Cumulative outstanding credit balance recorded across all active Khata ledgers for regular retail patrons.",
+      href: "/khata-receivables",
+    },
+    {
+      id: "owe-suppliers",
+      label: "You owe suppliers",
+      amount: 286500,
+      explanation:
+        "Total unpaid credit accounts payable on purchase orders delivered by fabric mills and clothing vendors.",
+      href: "/purchases-suppliers",
+    },
+  ],
+  attentionAlerts: [
+    {
+      id: "alert-reorder",
+      title: "9 variants at or below reorder level",
+      subtitle: "LW-2401 Peach Standard, LW-2401 Lilac Standard, KT-118 Black L",
+      severity: "warning",
+      href: "/products-inventory?filter=low-stock",
+    },
+    {
+      id: "alert-khata",
+      title: "3 customers with overdue Khata",
+      subtitle: "Past 30-day terms",
+      severity: "warning",
+      href: "/khata-receivables?filter=overdue",
+    },
+    {
+      id: "alert-bills",
+      title: "3 unpaid bills · Rs. 65,150",
+      subtitle: "LESCO due 14 Oct",
+      severity: "warning",
+      href: "/finance-expenses?tab=bills",
+    },
+    {
+      id: "alert-whatsapp",
+      title: "3 WhatsApp receipts failed",
+      subtitle: "Provider rate limit — retry available",
+      severity: "error",
+      href: "/whatsapp-campaigns?filter=failed",
+    },
+    {
+      id: "alert-trial",
+      title: "Trial ends in 5 days",
+      subtitle: "Renew to keep cashier access",
+      severity: "warning",
+      href: "/settings?tab=subscription",
+    },
+  ],
+  customerSummary: {
+    newCustomers: 6,
+    repeatCustomers: 19,
+    pointsIssued: 1690,
+    pointsRedeemed: 900,
+  },
+  topVariants: [
+    {
+      id: "v-1",
+      productName: "Khaddar 2-Piece",
+      color: "Olive",
+      size: "Standard",
+      unitsSold: 9,
+      revenue: 41850,
+    },
+    {
+      id: "v-2",
+      productName: "Straight Cotton Kurta",
+      color: "Black",
+      size: "M",
+      unitsSold: 7,
+      revenue: 20930,
+    },
+    {
+      id: "v-3",
+      productName: "Printed Silk Dupatta",
+      color: "Rust",
+      size: "Free size",
+      unitsSold: 8,
+      revenue: 13200,
+    },
+    {
+      id: "v-4",
+      productName: "Chiffon Formal Shirt",
+      color: "Maroon",
+      size: "M",
+      unitsSold: 2,
+      revenue: 19000,
+    },
+    {
+      id: "v-5",
+      productName: "Cigarette Pants",
+      color: "Black",
+      size: "M",
+      unitsSold: 6,
+      revenue: 11340,
+    },
+  ],
+};
