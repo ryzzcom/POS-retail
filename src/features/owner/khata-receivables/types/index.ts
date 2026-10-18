@@ -1,1 +1,1 @@
-export * from "./khata-receivables.types";
+export * from "./khata.types";

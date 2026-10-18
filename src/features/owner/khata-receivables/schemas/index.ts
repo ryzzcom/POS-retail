@@ -1,1 +1,1 @@
-export * from "./khata-receivables.schemas";
+export * from "./khata.schemas";
