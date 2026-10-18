@@ -12,6 +12,7 @@ import {
 } from "../types/products-inventory.types";
 import { PRODUCTS_INVENTORY_MOCK_DATA } from "../constants/products-inventory-mock";
 import { ProductFormValues, AdjustStockFormValues } from "../schemas/products-inventory.schemas";
+import { exportToCsv } from "@/lib/export";
 
 export function useProductsInventory() {
   // Master products list state
@@ -292,29 +293,26 @@ export function useProductsInventory() {
 
   // Handler: Export CSV
   const handleExportCSV = () => {
-    const csvRows = [
-      ["Product Name", "SKU", "Category", "On Hand", "Retail Price", "Cost Price", "Margin %"],
-      ...filteredProducts.map((p) => [
-        p.name,
-        p.sku,
-        p.categoryLabel,
-        p.onHand,
-        p.retailPrice,
-        p.costPrice,
-        `${p.marginPercent}%`,
-      ]),
+    const headers = [
+      "Product Name",
+      "SKU",
+      "Category",
+      "On Hand",
+      "Retail Price",
+      "Cost Price",
+      "Margin %",
     ];
+    const rows = filteredProducts.map((p) => [
+      p.name,
+      p.sku,
+      p.categoryLabel,
+      p.onHand,
+      p.retailPrice,
+      p.costPrice,
+      `${p.marginPercent}%`,
+    ]);
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      csvRows.map((e) => e.map((x) => `"${x}"`).join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `products-inventory-${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToCsv(`products-inventory-${Date.now()}`, headers, rows);
   };
 
   return {

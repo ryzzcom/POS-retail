@@ -55,7 +55,7 @@ export function ProductsInventoryToolbar({
         <SearchInput
           value={searchQuery}
           onChange={onSearchChange}
-          placeholder="Receipt no., customer or phone"
+          placeholder="Search by product name, SKU or barcode..."
           aria-label="Search products and inventory"
         />
       </div>

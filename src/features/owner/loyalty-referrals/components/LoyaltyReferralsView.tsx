@@ -9,6 +9,7 @@ import { PointRulesTab } from "./PointRulesTab";
 import { CouponsTab } from "./CouponsTab";
 import { ReferralsLedgerTab } from "./ReferralsLedgerTab";
 import { CouponDialog } from "./CouponDialog";
+import { exportToCsv } from "@/lib/export";
 
 export function LoyaltyReferralsView() {
   const [activeTab, setActiveTab] = React.useState<LoyaltyTabType>("rules");
@@ -58,27 +59,16 @@ export function LoyaltyReferralsView() {
   const handleExportLedger = () => {
     const headers = ["Customer", "Phone", "Type", "Points", "Details", "Date", "Status"];
     const rows = ledger.map((item) => [
-      `"${item.customerName}"`,
-      `"${item.customerPhone || ""}"`,
-      `"${item.type}"`,
+      item.customerName,
+      item.customerPhone || "",
+      item.type,
       item.points,
-      `"${item.refereeName ? `Referee: ${item.refereeName}` : item.receiptNo || item.subtitle || ""}"`,
-      `"${item.date}"`,
-      `"${item.status}"`,
+      item.refereeName ? `Referee: ${item.refereeName}` : item.receiptNo || item.subtitle || "",
+      item.date,
+      item.status,
     ]);
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `loyalty_referrals_ledger_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
+    exportToCsv(`loyalty_referrals_ledger_${Date.now()}`, headers, rows);
     showNotification("Loyalty & referrals ledger exported to CSV successfully.");
   };
 

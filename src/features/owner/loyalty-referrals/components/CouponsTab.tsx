@@ -152,7 +152,7 @@ export function CouponsTab({
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search code or offer..."
-              className="h-10 bg-card"
+              sizeVariant="sm"
             />
           </div>
 

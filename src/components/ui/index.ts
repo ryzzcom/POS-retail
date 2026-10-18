@@ -10,4 +10,5 @@ export * from "./dialog";
 export * from "./select";
 export * from "./search-input";
 export * from "./switch";
+export * from "./underline-tabs";
 

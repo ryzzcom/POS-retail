@@ -47,8 +47,8 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       >
         <Search
           className={cn(
-            "absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none shrink-0",
-            isSmall ? "size-3.5" : "size-4"
+            "absolute top-1/2 -translate-y-1/2 text-muted pointer-events-none shrink-0",
+            isSmall ? "left-3 size-3.5" : "left-4 size-4"
           )}
           aria-hidden="true"
         />
@@ -65,7 +65,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
             "w-full rounded-full bg-card border border-default/60 font-sans text-heading placeholder:text-muted",
             "focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary shadow-xs transition-colors",
             isSmall
-              ? "h-9 pl-9 pr-12 text-xs"
+              ? "h-9 sm:h-10 pl-9 pr-12 text-xs"
               : "h-11 pl-11 pr-14 text-xs sm:text-sm",
             disabled && "opacity-50 cursor-not-allowed",
             className
@@ -88,7 +88,10 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-xs font-sans text-muted hover:text-heading cursor-pointer px-1 py-0.5 rounded transition-colors"
+                className={cn(
+                  "font-sans text-muted hover:text-heading cursor-pointer px-1 py-0.5 rounded transition-colors",
+                  isSmall ? "text-[11px]" : "text-xs"
+                )}
                 aria-label="Clear search text"
               >
                 Clear

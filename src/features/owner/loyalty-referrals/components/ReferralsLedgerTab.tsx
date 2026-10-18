@@ -183,7 +183,7 @@ export function ReferralsLedgerTab({ ledger }: ReferralsLedgerTabProps) {
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search customer, phone, referee..."
-              className="h-10 bg-card"
+              sizeVariant="sm"
             />
           </div>
 

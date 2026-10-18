@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { SegmentedFilter } from "@/components/ui/segmented-filter";
 import { formatPKR } from "@/lib/formatters";
 import { CustomerItem } from "../types/customers.types";
 import { cn } from "@/lib/utils";
@@ -250,42 +251,32 @@ export function CustomerDetailDrawer({
         </div>
 
         {/* 2. Drawer Tab Switcher Pill Bar */}
-        <div className="flex items-center gap-2 border-b border-default/50 pb-3">
-          <button
-            type="button"
-            onClick={() => setActiveTab("overview")}
-            className={cn(
-              "px-4 py-1.5 rounded-full font-sans text-xs sm:text-sm font-medium transition-colors cursor-pointer",
-              activeTab === "overview"
-                ? "bg-primary text-dark-primary shadow-xs"
-                : "text-body hover:text-heading bg-subtle/50"
-            )}
-          >
-            Overview
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("points")}
-            className={cn(
-              "px-4 py-1.5 rounded-full font-sans text-xs sm:text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5",
-              activeTab === "points"
-                ? "bg-primary text-dark-primary shadow-xs"
-                : "text-body hover:text-heading bg-subtle/50"
-            )}
-          >
-            <span>Points & Loyalty</span>
-            <span
-              className={cn(
-                "text-[11px] px-1.5 py-0.2 rounded-full",
-                activeTab === "points"
-                  ? "bg-accent/20 text-accent font-semibold"
-                  : "bg-card text-muted"
-              )}
-            >
-              {pointsBalance.toLocaleString()} pts
-            </span>
-          </button>
+        <div className="border-b border-default/50 pb-3">
+          <SegmentedFilter
+            sizeVariant="sm"
+            options={[
+              { label: "Overview", value: "overview" },
+              {
+                label: "Points & Loyalty",
+                value: "points",
+                badge: (
+                  <span
+                    className={cn(
+                      "text-[11px] px-1.5 py-0.2 rounded-full",
+                      activeTab === "points"
+                        ? "bg-accent/20 text-accent font-semibold"
+                        : "bg-subtle text-muted"
+                    )}
+                  >
+                    {pointsBalance.toLocaleString()} pts
+                  </span>
+                ),
+              },
+            ]}
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as "overview" | "points")}
+            aria-label="Customer drawer tabs"
+          />
         </div>
 
         {/* ========================================================================= */}
