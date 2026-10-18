@@ -26,6 +26,8 @@ export interface DataTableProps<T> {
   columns: ColumnDef<T>[];
   keyExtractor?: (item: T, index: number) => string;
   onRowClick?: (item: T) => void;
+  renderExpandedRow?: (item: T, index: number) => React.ReactNode;
+  isRowExpanded?: (item: T, index: number) => boolean;
   emptyTitle?: string;
   emptyDescription?: string;
   emptyState?: React.ReactNode;
@@ -40,6 +42,8 @@ export function DataTable<T>({
   columns,
   keyExtractor = (_, index) => index.toString(),
   onRowClick,
+  renderExpandedRow,
+  isRowExpanded,
   emptyTitle = "No records found",
   emptyDescription = "There are no entries to display matching your criteria.",
   emptyState,
@@ -156,45 +160,58 @@ export function DataTable<T>({
               data.map((item, index) => {
                 const rowKey = keyExtractor(item, index);
                 const isClickable = Boolean(onRowClick);
+                const isExpanded = Boolean(isRowExpanded?.(item, index));
 
                 return (
-                  <tr
-                    key={rowKey}
-                    onClick={() => onRowClick?.(item)}
-                    className={cn(
-                      "bg-theme transition-colors",
-                      isClickable && "cursor-pointer hover:bg-subtle/20"
-                    )}
-                  >
-                    {columns.map((col) => {
-                      let cellContent: React.ReactNode = null;
-                      if (col.cell) {
-                        cellContent = col.cell(item, index);
-                      } else if (col.accessorKey) {
-                        cellContent = String(item[col.accessorKey] ?? "");
-                      }
+                  <React.Fragment key={rowKey}>
+                    <tr
+                      onClick={() => onRowClick?.(item)}
+                      className={cn(
+                        "bg-theme transition-colors",
+                        isClickable && "cursor-pointer hover:bg-subtle/20",
+                        isExpanded && "bg-subtle/10"
+                      )}
+                    >
+                      {columns.map((col) => {
+                        let cellContent: React.ReactNode = null;
+                        if (col.cell) {
+                          cellContent = col.cell(item, index);
+                        } else if (col.accessorKey) {
+                          cellContent = String(item[col.accessorKey] ?? "");
+                        }
 
-                      return (
-                        <td
-                          key={col.id}
-                          style={{ width: col.width }}
-                          className={cn(
-                            "px-5 py-4 sm:py-5 sm:px-6 font-sans text-sm text-heading align-middle",
-                            col.className
-                          )}
-                        >
-                          <div
+                        return (
+                          <td
+                            key={col.id}
+                            style={{ width: col.width }}
                             className={cn(
-                              "flex items-center",
-                              getAlignmentClass(col.align)
+                              "px-5 py-4 sm:py-5 sm:px-6 font-sans text-sm text-heading align-middle",
+                              col.className
                             )}
                           >
-                            {cellContent}
-                          </div>
+                            <div
+                              className={cn(
+                                "flex items-center",
+                                getAlignmentClass(col.align)
+                              )}
+                            >
+                              {cellContent}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    {renderExpandedRow && isExpanded && (
+                      <tr className="bg-subtle/15 border-b border-default/30">
+                        <td
+                          colSpan={columns.length}
+                          className="px-5 py-4 sm:px-6"
+                        >
+                          {renderExpandedRow(item, index)}
                         </td>
-                      );
-                    })}
-                  </tr>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })
             )}

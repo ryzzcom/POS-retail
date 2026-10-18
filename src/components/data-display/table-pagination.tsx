@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/select";
 
 export interface TablePaginationProps {
   currentPage: number;
@@ -79,20 +80,18 @@ export function TablePagination({
         </span>
 
         {onPageSizeChange && (
-          <div className="hidden sm:flex items-center gap-1.5 ml-2 pl-3 border-l border-default/60">
+          <div className="hidden sm:flex items-center gap-2 ml-2 pl-3 border-l border-default/60">
             <span className="text-xs text-muted">Rows:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-card border border-default rounded-md px-1.5 py-0.5 text-xs text-heading font-medium outline-none focus:border-primary cursor-pointer"
+            <Select
+              options={pageSizeOptions.map((opt) => ({
+                label: String(opt),
+                value: String(opt),
+              }))}
+              value={String(pageSize)}
+              onChange={(val) => onPageSizeChange(Number(val))}
+              sizeVariant="sm"
               aria-label="Select rows per page"
-            >
-              {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+            />
           </div>
         )}
       </div>

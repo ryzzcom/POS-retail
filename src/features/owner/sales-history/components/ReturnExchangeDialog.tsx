@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { formatPKR } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
@@ -162,21 +163,18 @@ export function ReturnExchangeDialog({
 
                 {/* Condition Selector */}
                 <td className="px-4 py-3.5 align-middle">
-                  <select
+                  <Select
+                    options={[
+                      { label: "Good / restockable", value: "Good / restockable" },
+                      { label: "Minor defect", value: "Minor defect / discounted" },
+                      { label: "Damaged / unsellable", value: "Damaged / unsellable" },
+                    ]}
                     value={condition}
-                    onChange={(e) => setCondition(e.target.value)}
-                    className="w-full h-8 px-2.5 rounded-[8px] border border-default bg-card font-sans text-xs text-heading focus:border-focus focus:outline-none cursor-pointer"
-                  >
-                    <option value="Good / restockable">
-                      Good / restockable
-                    </option>
-                    <option value="Minor defect / discounted">
-                      Minor defect
-                    </option>
-                    <option value="Damaged / unsellable">
-                      Damaged / unsellable
-                    </option>
-                  </select>
+                    onChange={setCondition}
+                    sizeVariant="sm"
+                    fullWidth
+                    aria-label="Item condition"
+                  />
                 </td>
               </tr>
             </tbody>
