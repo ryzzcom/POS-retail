@@ -9,4 +9,5 @@ export * from "./drawer";
 export * from "./dialog";
 export * from "./select";
 export * from "./search-input";
+export * from "./switch";
 
