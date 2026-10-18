@@ -20,8 +20,8 @@ export function ProductVariantSubtable({
 }: ProductVariantSubtableProps) {
   return (
     <div className="w-full bg-card rounded-xl border border-default/60 shadow-xs overflow-hidden select-none">
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-left">
+      <div className="w-full overflow-x-auto custom-scrollbar">
+        <table className="w-full min-w-[680px] border-collapse text-left">
           {/* Variant Header Row (Figma Node 3386:22170) */}
           <thead>
             <tr className="bg-subtle/30 border-b border-default/40 text-xs font-sans text-body">

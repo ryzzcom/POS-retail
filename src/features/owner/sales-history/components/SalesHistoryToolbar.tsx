@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SegmentedFilter } from "@/components/ui/segmented-filter";
+import { SearchInput } from "@/components/ui/search-input";
 import { PaymentMethod } from "../types/sales-history.types";
 import { PAYMENT_METHOD_FILTER_OPTIONS } from "../constants/sales-history-mock";
 
@@ -25,27 +25,22 @@ export function SalesHistoryToolbar({
   return (
     <div
       className={cn(
-        "w-full flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 select-none",
+        "w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 select-none",
         className
       )}
     >
-      {/* 1. Search Input Pill (Figma Node 3386:16458) */}
-      <div className="relative w-full sm:w-[400px] lg:w-[440px] shrink-0">
-        <div className="h-[48px] bg-theme border border-default/40 rounded-[22px] px-3.5 flex items-center gap-2.5 shadow-xs transition-colors focus-within:border-primary">
-          <Search className="size-5 text-muted shrink-0" aria-hidden="true" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Receipt no., customer or phone"
-            className="w-full font-sans text-sm text-heading placeholder:text-muted bg-transparent outline-none"
-            aria-label="Search sales receipts"
-          />
-        </div>
+      {/* 1. Standardized Search Input Pill (Figma Node 3386:16458) */}
+      <div className="w-full sm:w-[320px] lg:w-[360px] shrink-0">
+        <SearchInput
+          value={searchQuery}
+          onChange={onSearchChange}
+          placeholder="Receipt no., customer or phone"
+          aria-label="Search sales receipts"
+        />
       </div>
 
       {/* 2. Payment Method Segmented Filter Pills (Figma Node 3386:16463) */}
-      <div className="overflow-x-auto pb-1 lg:pb-0">
+      <div className="overflow-x-auto no-scrollbar max-w-full flex-nowrap shrink-0 pb-1 sm:pb-0">
         <SegmentedFilter
           options={PAYMENT_METHOD_FILTER_OPTIONS}
           value={selectedMethod}

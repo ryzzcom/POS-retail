@@ -107,8 +107,9 @@ export function ReturnExchangeDialog({
       <div className="flex flex-col gap-5 select-none">
         {/* 1. Returnable Items Table */}
         <div className="w-full rounded-[14px] border border-default/60 overflow-hidden bg-theme">
-          <table className="w-full border-collapse text-left">
-            <thead>
+          <div className="w-full overflow-x-auto custom-scrollbar">
+            <table className="w-full min-w-[500px] border-collapse text-left">
+              <thead>
               <tr className="bg-subtle/30 border-b border-default/40 font-sans text-xs font-medium text-heading">
                 <th className="px-4 py-3 text-left">Item</th>
                 <th className="px-3 py-3 text-right">Paid / pc</th>
@@ -179,6 +180,7 @@ export function ReturnExchangeDialog({
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* 2. Reason & Settle As 2-Column Grid */}

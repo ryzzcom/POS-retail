@@ -18,7 +18,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +29,14 @@ export interface OwnerSidebarProps {
    * Default collapse state. Defaults to true to match compact 72px rail specification.
    */
   defaultCollapsed?: boolean;
+  /**
+   * Controlled open state for mobile navigation drawer.
+   */
+  isMobileOpen?: boolean;
+  /**
+   * Callback to close mobile navigation drawer.
+   */
+  onCloseMobile?: () => void;
   className?: string;
 }
 
@@ -60,7 +70,7 @@ const OVERVIEW_NAV_ITEMS: NavItem[] = [
     icon: Truck,
   },
   {
-    name: "Customers & CRM",
+    name: "Customers",
     href: "/customers",
     icon: Users,
   },
@@ -106,10 +116,45 @@ const SUPPORT_NAV_ITEMS: NavItem[] = [
 
 export function OwnerSidebar({
   defaultCollapsed = true,
+  isMobileOpen = false,
+  onCloseMobile,
   className,
 }: OwnerSidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 1. Auto-close mobile drawer on route change
+  React.useEffect(() => {
+    if (isMobileOpen && onCloseMobile) {
+      onCloseMobile();
+    }
+  }, [pathname]);
+
+  // 2. Auto-close mobile drawer on Escape key and lock body scroll while open
+  React.useEffect(() => {
+    if (!isMobileOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCloseMobile?.();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileOpen, onCloseMobile]);
 
   const isRouteActive = (href: string) => {
     if (href === "/dashboard") {
@@ -119,10 +164,11 @@ export function OwnerSidebar({
   };
 
   return (
-    <aside
+    <>
+      <aside
       aria-label="Store Owner Sidebar"
       className={cn(
-        "relative h-screen bg-primary flex flex-col justify-between shrink-0 transition-all duration-300 z-50 select-none overflow-visible",
+        "hidden lg:flex relative h-screen bg-primary flex-col justify-between shrink-0 transition-all duration-300 z-30 select-none overflow-visible",
         isCollapsed ? "w-[72px]" : "w-[240px]",
         className
       )}
@@ -212,7 +258,7 @@ export function OwnerSidebar({
                         ? "bg-accent text-dark-primary shadow-xs font-medium"
                         : "text-dark-secondary hover:text-dark-primary hover:bg-subtle/10",
                       item.disabled &&
-                        "opacity-40 cursor-not-allowed pointer-events-none"
+                      "opacity-40 cursor-not-allowed pointer-events-none"
                     )}
                   >
                     <Icon
@@ -322,7 +368,145 @@ export function OwnerSidebar({
           </nav>
         </div>
       </div>
-    </aside>
+      </aside>
+
+      {/* 2. Mobile Full-Viewport Navigation Drawer Overlay (portalled to body to prevent clipping) */}
+      {mounted &&
+        isMobileOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] lg:hidden flex select-none"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile Navigation Drawer"
+          >
+            {/* 1. Dark Backdrop Overlay */}
+            <div
+              className="fixed inset-0 bg-heading/50 backdrop-blur-[1px] transition-opacity duration-200"
+              onClick={onCloseMobile}
+              aria-hidden="true"
+            />
+
+            {/* 2. Left Slide-In Sidebar Panel */}
+            <div className="relative z-10 w-[260px] max-w-[80vw] h-full bg-primary text-dark-primary flex flex-col justify-between p-4 shadow-xl overflow-y-auto animate-in slide-in-from-left duration-200">
+              {/* Header Branding & Close Button */}
+              <div className="flex flex-col shrink-0">
+                <div className="h-[52px] flex items-center justify-between border-b border-dark pb-2 mb-3">
+                  <Link
+                    href="/dashboard"
+                    onClick={onCloseMobile}
+                    className="flex items-center gap-2.5 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-md"
+                    aria-label="POS System Dashboard"
+                  >
+                    <Image
+                      src="/image/sidebar-logo.svg"
+                      alt="POS Retail"
+                      width={52}
+                      height={24}
+                      priority
+                      className="w-[52px] h-[24px] object-contain shrink-0"
+                    />
+                    <span className="font-heading font-semibold text-sm tracking-tight text-dark-primary whitespace-nowrap">
+                      POS RETAIL
+                    </span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={onCloseMobile}
+                    className="size-8 rounded-lg flex items-center justify-center text-dark-primary hover:text-dark-secondary hover:bg-subtle/10 transition-colors cursor-pointer"
+                    aria-label="Close mobile navigation menu"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
+
+                {/* Section: Overview */}
+                <div className="font-sans text-[10px] text-dark-secondary tracking-[0.1px] uppercase mb-2 font-medium px-2">
+                  Overview
+                </div>
+                <nav aria-label="Mobile Overview Navigation" className="flex flex-col gap-1">
+                  {OVERVIEW_NAV_ITEMS.map((item) => {
+                    const active = isRouteActive(item.href);
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.disabled ? "#" : item.href}
+                        onClick={onCloseMobile}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "h-[40px] w-full px-3 gap-3 rounded-[10px] flex items-center transition-all duration-150",
+                          active
+                            ? "bg-accent text-dark-primary shadow-xs font-medium"
+                            : "text-dark-secondary hover:text-dark-primary hover:bg-subtle/10",
+                          item.disabled &&
+                            "opacity-40 cursor-not-allowed pointer-events-none"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "size-5 shrink-0 transition-colors",
+                            active ? "text-dark-primary" : "text-dark-secondary"
+                          )}
+                        />
+                        <span className="font-sans text-xs tracking-tight truncate flex-1">
+                          {item.name}
+                        </span>
+                        {item.badge && (
+                          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-accent/20 text-accent">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Section: Support */}
+              <div className="shrink-0 pt-3 mt-4 border-t border-dark">
+                <div className="font-sans text-[10px] text-dark-secondary tracking-[0.1px] uppercase mb-2 font-medium px-2">
+                  Support
+                </div>
+                <nav aria-label="Mobile Support Navigation" className="flex flex-col gap-1">
+                  {SUPPORT_NAV_ITEMS.map((item) => {
+                    const active = isRouteActive(item.href);
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onCloseMobile}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "h-[38px] w-full px-3 gap-3 rounded-[8px] flex items-center transition-all duration-150",
+                          active
+                            ? "bg-accent text-dark-primary shadow-xs font-medium"
+                            : "text-dark-secondary hover:text-dark-primary hover:bg-subtle/10"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "size-5 shrink-0 transition-colors",
+                            active ? "text-dark-primary" : "text-dark-secondary"
+                          )}
+                        />
+                        <span className="font-sans text-xs tracking-tight truncate flex-1">
+                          {item.name}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 

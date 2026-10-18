@@ -35,7 +35,7 @@ export function Dialog({
   header,
   footer,
   children,
-  maxWidthClass = "sm:max-w-[640px]",
+  maxWidthClass = "w-full sm:max-w-[600px]",
   className,
   headerClassName,
   bodyClassName,
@@ -89,7 +89,7 @@ export function Dialog({
   const dialogContent = (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 select-none",
+        "fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 select-none",
         !open && "pointer-events-none"
       )}
       role="dialog"
@@ -112,7 +112,7 @@ export function Dialog({
       {/* 2. Dialog Card Container */}
       <div
         className={cn(
-          "relative z-10 w-full bg-card rounded-[24px] shadow-xl border border-default flex flex-col overflow-hidden transition-all duration-200 ease-out",
+          "relative z-10 w-full max-w-[calc(100vw-24px)] max-h-[90vh] bg-card rounded-[20px] sm:rounded-[24px] shadow-xl border border-default flex flex-col overflow-hidden transition-all duration-200 ease-out",
           maxWidthClass,
           open
             ? "scale-100 opacity-100 translate-y-0"

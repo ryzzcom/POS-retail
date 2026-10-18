@@ -34,7 +34,7 @@ export function Drawer({
   header,
   footer,
   children,
-  widthClass = "sm:max-w-[578px]",
+  widthClass = "w-full sm:max-w-[480px] md:max-w-[540px]",
   className,
   headerClassName,
   bodyClassName,

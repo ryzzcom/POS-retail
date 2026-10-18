@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { SegmentedFilter, SegmentedFilterOption } from "@/components/ui/segmented-filter";
 import { TimeRangeFilter } from "../types/dashboard.types";
 
 interface DashboardGreetingProps {
@@ -11,6 +12,12 @@ interface DashboardGreetingProps {
   onFilterChange?: (filter: TimeRangeFilter) => void;
   className?: string;
 }
+
+const DASHBOARD_TIME_FILTER_OPTIONS: SegmentedFilterOption[] = [
+  { label: "Today", value: "today" },
+  { label: "This week", value: "week" },
+  { label: "October (MTD)", value: "month" },
+];
 
 export function DashboardGreeting({
   ownerName,
@@ -44,55 +51,13 @@ export function DashboardGreeting({
       </div>
 
       {/* Right: Segmented Time Range Pill Switcher (Figma Node 3382:11955) */}
-      <div
-        className="bg-card border border-default p-[6px] rounded-[22px] flex items-center gap-[6px] self-start md:self-auto shadow-xs"
-        role="tablist"
-        aria-label="Time period selection"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selected === "today"}
-          onClick={() => handleSelect("today")}
-          className={cn(
-            "font-sans text-sm px-4 py-1.5 rounded-[22px] transition-all cursor-pointer",
-            selected === "today"
-              ? "bg-primary text-white shadow-xs font-normal"
-              : "text-body hover:text-heading"
-          )}
-        >
-          Today
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selected === "week"}
-          onClick={() => handleSelect("week")}
-          className={cn(
-            "font-sans text-sm px-3.5 py-1.5 rounded-[22px] transition-all cursor-pointer",
-            selected === "week"
-              ? "bg-primary text-white shadow-xs font-normal"
-              : "text-body hover:text-heading"
-          )}
-        >
-          This week
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selected === "month"}
-          onClick={() => handleSelect("month")}
-          className={cn(
-            "font-sans text-sm px-3.5 py-1.5 rounded-[22px] transition-all cursor-pointer",
-            selected === "month"
-              ? "bg-primary text-white shadow-xs font-normal"
-              : "text-body hover:text-heading"
-          )}
-        >
-          October (MTD)
-        </button>
+      <div className="overflow-x-auto no-scrollbar max-w-full flex-nowrap shrink-0 self-start md:self-auto">
+        <SegmentedFilter
+          options={DASHBOARD_TIME_FILTER_OPTIONS}
+          value={selected}
+          onChange={(val) => handleSelect(val as TimeRangeFilter)}
+          aria-label="Time period selection"
+        />
       </div>
     </div>
   );

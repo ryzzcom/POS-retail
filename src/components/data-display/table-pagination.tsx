@@ -70,8 +70,8 @@ export function TablePagination({
       )}
       aria-label="Table pagination navigation"
     >
-      {/* Left: Summary Count & Optional Page Size Selector */}
-      <div className="flex items-center gap-3 text-body">
+      {/* Left: Summary Count & Page Size Selector */}
+      <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-2.5 sm:gap-3 text-body flex-wrap">
         <span>
           Showing <span className="font-medium text-heading">{startItem}</span>
           –<span className="font-medium text-heading">{endItem}</span> of{" "}
@@ -80,7 +80,7 @@ export function TablePagination({
         </span>
 
         {onPageSizeChange && (
-          <div className="hidden sm:flex items-center gap-2 ml-2 pl-3 border-l border-default/60">
+          <div className="flex items-center gap-1.5 pl-2 sm:pl-3 border-l border-default/60">
             <span className="text-xs text-muted">Rows:</span>
             <Select
               options={pageSizeOptions.map((opt) => ({

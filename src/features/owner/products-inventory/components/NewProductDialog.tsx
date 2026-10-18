@@ -367,8 +367,8 @@ export function NewProductDialog({
           </div>
 
           {/* Matrix Variants List Table */}
-          <div className="w-full overflow-x-auto border-t border-default/40 pt-3">
-            <table className="w-full border-collapse text-left text-xs font-sans">
+          <div className="w-full overflow-x-auto custom-scrollbar border-t border-default/40 pt-3">
+            <table className="w-full min-w-[620px] border-collapse text-left text-xs font-sans">
               <thead>
                 <tr className="text-body border-b border-default/30">
                   <th className="py-2 px-2 font-medium">Colour / size</th>

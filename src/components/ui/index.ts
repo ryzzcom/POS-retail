@@ -8,4 +8,5 @@ export * from "./segmented-filter";
 export * from "./drawer";
 export * from "./dialog";
 export * from "./select";
+export * from "./search-input";
 

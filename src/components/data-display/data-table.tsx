@@ -71,8 +71,8 @@ export function DataTable<T>({
         className
       )}
     >
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-left">
+      <div className="w-full overflow-x-auto custom-scrollbar">
+        <table className="w-full min-w-[680px] border-collapse text-left">
           {/* Table Header Row (Figma Node 3386:16477) */}
           <thead>
             <tr className="bg-subtle/30 border-b border-default/40">

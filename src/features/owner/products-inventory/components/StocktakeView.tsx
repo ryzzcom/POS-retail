@@ -135,8 +135,8 @@ export function StocktakeView({ className }: StocktakeViewProps) {
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+          <div className="w-full overflow-x-auto custom-scrollbar">
+            <table className="w-full min-w-[540px] border-collapse text-left">
               <thead>
                 <tr className="text-xs font-sans text-body border-b border-default/30">
                   <th className="py-2.5 px-4 font-normal">Item</th>

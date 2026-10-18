@@ -71,3 +71,7 @@ export function SegmentedFilter({
     </div>
   );
 }
+
+export { SegmentedFilter as SegmentedTabs };
+export type { SegmentedFilterOption as SegmentedTabOption };
+export type { SegmentedFilterProps as SegmentedTabsProps };

@@ -54,7 +54,7 @@ export function SaleReceiptDrawer({
     >
       <div className="flex flex-col select-none">
         {/* 1. Line Items Section (Figma Node 3386:17240) */}
-        <div className="px-6 py-4 flex items-center justify-between gap-4">
+        <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1 min-w-0">
             <p className="font-sans text-sm text-heading font-normal">
               Chiffon Formal Shirt
@@ -75,7 +75,7 @@ export function SaleReceiptDrawer({
         </div>
 
         {/* 2. Bill Breakdown Section (Figma Node 3386:17256) */}
-        <div className="border-t border-b border-default px-6 py-3.5 flex flex-col gap-3">
+        <div className="border-t border-b border-default px-4 sm:px-6 py-3.5 flex flex-col gap-3">
           <div className="flex items-center justify-between font-sans text-sm text-body">
             <span>Subtotal</span>
             <span>Rs. 9,500</span>
@@ -95,7 +95,7 @@ export function SaleReceiptDrawer({
         </div>
 
         {/* 3. Payments & Customer 2-Column Split (Figma Node 3386:17271) */}
-        <div className="grid grid-cols-2 gap-6 px-6 py-4 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 py-4 items-start">
           {/* Left: Payments */}
           <div className="flex flex-col gap-1.5 min-w-0">
             <span className="font-sans text-xs text-body font-normal tracking-wide">
@@ -116,7 +116,7 @@ export function SaleReceiptDrawer({
           </div>
 
           {/* Right: Customer */}
-          <div className="flex flex-col gap-1 min-w-0 border-l border-default pl-6">
+          <div className="flex flex-col gap-1 min-w-0 border-t sm:border-t-0 sm:border-l border-default pt-3 sm:pt-0 sm:pl-6">
             <span className="font-sans text-xs text-body font-normal tracking-wide">
               Customer
             </span>
@@ -130,7 +130,7 @@ export function SaleReceiptDrawer({
         </div>
 
         {/* 4. Action Cards (Figma Node 3386:17286) */}
-        <div className="border-t border-b border-default px-6 py-4 flex flex-col gap-2.5">
+        <div className="border-t border-b border-default px-4 sm:px-6 py-4 flex flex-col gap-2.5">
           {/* Card 1: Reprint Receipt */}
           <button
             type="button"
@@ -185,7 +185,7 @@ export function SaleReceiptDrawer({
         </div>
 
         {/* 5. Bottom 2-Column Split: Thermal Receipt Paper & History Timeline (Figma Node 3386:17310) */}
-        <div className="px-6 py-5 flex flex-col md:flex-row gap-5 items-start">
+        <div className="px-4 sm:px-6 py-5 flex flex-col md:flex-row gap-5 items-start">
           {/* Left Column: Authentic Thermal Receipt Paper Preview */}
           <div className="w-full md:w-[316px] shrink-0 bg-subtle/40 rounded-[10px] p-3 border border-default/60">
             <div className="bg-card rounded-[6px] p-3.5 border border-default/40 shadow-xs font-mono text-[11px] leading-relaxed text-heading flex flex-col">
