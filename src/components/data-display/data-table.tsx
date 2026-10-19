@@ -35,6 +35,7 @@ export interface DataTableProps<T> {
   skeletonRows?: number;
   pagination?: TablePaginationConfig;
   className?: string;
+  roundedTop?: boolean;
 }
 
 export function DataTable<T>({
@@ -51,6 +52,7 @@ export function DataTable<T>({
   skeletonRows = 5,
   pagination,
   className,
+  roundedTop = true,
 }: DataTableProps<T>) {
   const getAlignmentClass = (align?: ColumnAlign) => {
     switch (align) {
@@ -67,7 +69,8 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "w-full rounded-[22px] border border-default/40 bg-theme shadow-xs overflow-hidden select-none flex flex-col",
+        "w-full border border-default/40 bg-theme shadow-xs overflow-hidden select-none flex flex-col",
+        roundedTop ? "rounded-[22px]" : "rounded-t-none rounded-b-[18px]",
         className
       )}
     >
