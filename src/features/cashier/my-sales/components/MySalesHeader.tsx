@@ -4,6 +4,7 @@ import React from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/formatters";
+import { PageHeader } from "@/components/layouts/PageHeader";
 
 export interface MySalesHeaderProps {
   receiptsCount: number;
@@ -19,18 +20,15 @@ export function MySalesHeader({
   onExport,
 }: MySalesHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full select-none">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading font-semibold text-2xl sm:text-[28px] text-heading tracking-[-0.4px]">
-          My sales today
-        </h1>
-        <p className="font-sans text-sm text-body">
-          {receiptsCount} {receiptsCount === 1 ? "receipt" : "receipts"} · {itemsCount} items · {formatPKR(totalSalesPKR)} · only your own receipts are shown
-        </p>
-      </div>
-
-      {onExport && (
-        <div className="flex items-center gap-3 shrink-0">
+    <PageHeader
+      title="My sales today"
+      description={`${receiptsCount} ${
+        receiptsCount === 1 ? "receipt" : "receipts"
+      } · ${itemsCount} items · ${formatPKR(
+        totalSalesPKR
+      )} · only your own receipts are shown`}
+      actions={
+        onExport ? (
           <Button
             type="button"
             variant="white"
@@ -40,8 +38,8 @@ export function MySalesHeader({
             <Download className="size-4 shrink-0" />
             <span>Export</span>
           </Button>
-        </div>
-      )}
-    </div>
+        ) : undefined
+      }
+    />
   );
 }

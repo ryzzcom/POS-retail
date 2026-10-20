@@ -4,12 +4,13 @@ import React, { useState, useMemo } from "react";
 import { CheckCircle2, Info } from "lucide-react";
 import { exportToCsv } from "@/lib/export";
 import { formatPKR } from "@/lib/formatters";
-import { SaleReceiptDrawer } from "@/features/owner/sales-history";
+import {
+  SaleReceiptDrawer,
+  ReturnExchangeDialog,
+} from "@/features/owner/sales-history";
 import { ReceiptSummary } from "@/features/owner/sales-history/types/sales-history.types";
+import { SalesTable, SalesToolbar } from "@/components/common";
 import { MySalesHeader } from "./MySalesHeader";
-import { MySalesToolbar } from "./MySalesToolbar";
-import { MySalesTable } from "./MySalesTable";
-import { CashierReturnDialog } from "./CashierReturnDialog";
 import { MOCK_CASHIER_SALES } from "../constants";
 import {
   CashierSaleItem,
@@ -88,31 +89,34 @@ export function MySalesView() {
     });
   }, [salesList, selectedMethod, search]);
 
-  // 4. Summary Metrics
-  const summary = useMemo(() => {
-    const receiptsCount = filteredSales.length;
-    const itemsCount = filteredSales.reduce((acc, curr) => acc + curr.itemsCount, 0);
-    const totalSalesPKR = filteredSales.reduce((acc, curr) => acc + curr.totalAmountPKR, 0);
-    return { receiptsCount, itemsCount, totalSalesPKR };
-  }, [filteredSales]);
-
-  // 5. Paginated Sales for Table
+  // 4. Paginated Sales
   const paginatedSales = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredSales.slice(start, start + pageSize);
   }, [filteredSales, currentPage, pageSize]);
 
-  // 6. Export to CSV
+  // 5. Dynamic Summary Metrics
+  const summary = useMemo(() => {
+    const receiptsCount = filteredSales.length;
+    const itemsCount = filteredSales.reduce((acc, curr) => acc + curr.itemsCount, 0);
+    const totalSalesPKR = filteredSales.reduce(
+      (acc, curr) => acc + curr.totalAmountPKR,
+      0
+    );
+    return { receiptsCount, itemsCount, totalSalesPKR };
+  }, [filteredSales]);
+
+  // 6. Export to CSV Handler
   const handleExport = () => {
     const headers = [
-      "Receipt ID",
-      "Timestamp",
+      "Receipt No",
+      "Time",
       "Customer",
       "Phone",
       "Items Count",
-      "Paid By",
+      "Payment Method",
       "WhatsApp Status",
-      "Total Amount (PKR)",
+      "Total (PKR)",
     ];
 
     const rows = filteredSales.map((s) => [
@@ -155,6 +159,8 @@ export function MySalesView() {
     );
   };
 
+  const totalPages = Math.max(1, Math.ceil(filteredSales.length / pageSize));
+
   return (
     <div className="w-full flex flex-col gap-6 lg:gap-8 pb-6 animate-in fade-in-50 duration-200">
       {/* Dynamic Toast / Feedback Notification */}
@@ -181,24 +187,29 @@ export function MySalesView() {
       />
 
       {/* Toolbar: Search & Payment Method Pills */}
-      <MySalesToolbar
+      <SalesToolbar
         search={search}
         onSearchChange={handleSearchChange}
         selectedMethod={selectedMethod}
-        onMethodChange={handleMethodChange}
+        onMethodChange={(method) => handleMethodChange(method as CashierPaymentMethod)}
       />
 
       {/* Sales DataTable */}
-      <MySalesTable
+      <SalesTable<CashierSaleItem>
         sales={paginatedSales}
+        showCashierColumn={false}
         onSelectSale={handleSelectSale}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalItems={filteredSales.length}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={(newSize) => {
-          setPageSize(newSize);
-          setCurrentPage(1);
+        pagination={{
+          currentPage,
+          totalPages,
+          totalItems: filteredSales.length,
+          pageSize,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: (newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          },
+          itemLabel: "receipts",
         }}
       />
 
@@ -210,7 +221,7 @@ export function MySalesView() {
       />
 
       {/* Standalone Return & Exchange Modal */}
-      <CashierReturnDialog
+      <ReturnExchangeDialog
         open={returnDialogState.open}
         onClose={() =>
           setReturnDialogState((prev) => ({ ...prev, open: false }))

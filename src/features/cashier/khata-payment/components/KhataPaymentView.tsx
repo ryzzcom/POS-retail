@@ -10,9 +10,8 @@ import {
   WhatsAppReminderDialog,
 } from "@/features/owner/khata-receivables";
 import { RecordKhataPaymentFormValues } from "@/features/owner/khata-receivables/schemas/khata.schemas";
+import { KhataAccountsTable, KhataToolbar } from "@/components/common";
 import { KhataPaymentHeader } from "./KhataPaymentHeader";
-import { KhataPaymentToolbar } from "./KhataPaymentToolbar";
-import { KhataPaymentTable } from "./KhataPaymentTable";
 import { MOCK_CASHIER_KHATA_ACCOUNTS } from "../constants";
 import { KhataAccount, CashierKhataStatusFilter } from "../types";
 
@@ -109,73 +108,68 @@ export function KhataPaymentView() {
       a.balance,
     ]);
 
-    exportToCsv("cashier-khata-receivables-today", headers, rows);
-    showNotification("Khata receivables report exported to CSV successfully.");
+    exportToCsv("cashier-khata-accounts", headers, rows);
+    showNotification("Khata receivables list exported to CSV successfully.");
   };
 
-  // 6. Row Selection -> Open Slide-Over Ledger Drawer
+  // 6. Modal Open Handlers
   const handleSelectAccount = (account: KhataAccount) => {
     setSelectedAccount(account);
     setIsLedgerDrawerOpen(true);
   };
 
-  // 7. Open Payment Dialog for a specific account or general
   const handleOpenRecordPayment = (account?: KhataAccount) => {
-    setSelectedAccount(account || accounts[0] || null);
+    setSelectedAccount(account || null);
     setIsPaymentDialogOpen(true);
   };
 
-  // 8. Open WhatsApp Reminder Dialog
   const handleOpenReminder = (account: KhataAccount) => {
     setSelectedAccount(account);
     setIsReminderDialogOpen(true);
   };
 
-  // 9. Confirm Payment Submission
+  // 7. Payment Confirmation Handler
   const handleConfirmPayment = (values: RecordKhataPaymentFormValues) => {
-    const paidAmount = Number(values.amount);
-
     setAccounts((prev) =>
       prev.map((acc) => {
         if (acc.id === values.accountId) {
-          const newBalance = Math.max(0, acc.balance - paidAmount);
-          const newLimitPercent = Math.round((newBalance / acc.creditLimit) * 100);
-          const newLedgerEntry = {
-            id: `led-${Date.now()}`,
-            accountId: acc.id,
-            type: "payment_received" as const,
-            date: values.paymentDate || "Today",
-            amount: paidAmount,
-            balanceAfter: newBalance,
-            description: `Payment received (${values.paymentMethod.replace("_", " ")})`,
-            paymentMethod: values.paymentMethod,
-          };
+          const newBalance = Math.max(0, acc.balance - values.amount);
+          const newPercent = Math.round((newBalance / acc.creditLimit) * 100);
+          const newStatus =
+            newBalance === 0
+              ? "settled"
+              : acc.status === "overdue"
+              ? "overdue"
+              : "within_terms";
 
-          return {
+          const updated: KhataAccount = {
             ...acc,
             balance: newBalance,
-            limitUsedPercent: newLimitPercent,
-            status: newBalance === 0 ? "settled" : acc.status,
-            ledgerEntries: [newLedgerEntry, ...(acc.ledgerEntries || [])],
+            limitUsedPercent: newPercent,
+            status: newStatus as any,
+            lastPaymentDate: "Today",
           };
+
+          if (selectedAccount?.id === acc.id) {
+            setSelectedAccount(updated);
+          }
+          return updated;
         }
         return acc;
       })
     );
 
-    const targetAccount = accounts.find((a) => a.id === values.accountId);
+    const target = accounts.find((a) => a.id === values.accountId);
     showNotification(
-      `Recorded ${formatPKR(paidAmount)} Khata payment for "${
-        targetAccount?.customerName || "Customer"
-      }". Remaining balance: ${formatPKR(
-        Math.max(0, (targetAccount?.balance || 0) - paidAmount)
-      )}.`
+      `Payment of ${formatPKR(values.amount)} received from ${
+        target?.customerName || "Customer"
+      }.`
     );
   };
 
   return (
     <div className="w-full flex flex-col gap-6 lg:gap-8 pb-6 animate-in fade-in-50 duration-200">
-      {/* Toast Notification */}
+      {/* Dynamic Toast / Feedback Notification */}
       {notification && (
         <div
           role="status"
@@ -197,19 +191,20 @@ export function KhataPaymentView() {
       />
 
       {/* Toolbar: Search & Status Filter */}
-      <KhataPaymentToolbar
+      <KhataToolbar
         search={search}
         onSearchChange={handleSearchChange}
-        selectedStatus={selectedStatus}
-        onStatusChange={handleStatusChange}
+        statusFilter={selectedStatus}
+        onStatusFilterChange={(val) => handleStatusChange(val as CashierKhataStatusFilter)}
       />
 
       {/* Khata Accounts DataTable */}
-      <KhataPaymentTable
+      <KhataAccountsTable
+        role="cashier"
         accounts={paginatedAccounts}
         onSelectAccount={handleSelectAccount}
         onRecordPayment={(acc) => handleOpenRecordPayment(acc)}
-        onSendReminder={handleOpenReminder}
+        onSendWhatsApp={handleOpenReminder}
         currentPage={currentPage}
         pageSize={pageSize}
         totalItems={filteredAccounts.length}
@@ -234,6 +229,7 @@ export function KhataPaymentView() {
         open={isLedgerDrawerOpen}
         onClose={() => setIsLedgerDrawerOpen(false)}
         account={selectedAccount}
+        canAdjustLimit={false}
         onRecordPayment={(acc) => {
           setIsLedgerDrawerOpen(false);
           handleOpenRecordPayment(acc);
@@ -241,12 +237,6 @@ export function KhataPaymentView() {
         onSendWhatsApp={(acc) => {
           setIsLedgerDrawerOpen(false);
           handleOpenReminder(acc);
-        }}
-        onAdjustLimit={() => {
-          showNotification(
-            "Credit limit adjustments are restricted to Store Owner permission.",
-            "info"
-          );
         }}
       />
 

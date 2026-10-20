@@ -8,8 +8,7 @@ import { MOCK_KHATA_ACCOUNTS } from "../constants/khata-mock";
 import { RecordKhataPaymentFormValues } from "../schemas/khata.schemas";
 import { KhataHeader } from "./KhataHeader";
 import { KhataAgingCard } from "./KhataAgingCard";
-import { KhataToolbar } from "./KhataToolbar";
-import { KhataTable } from "./KhataTable";
+import { KhataAccountsTable, KhataToolbar } from "@/components/common";
 import { KhataDetailDrawer } from "./KhataDetailDrawer";
 import { RecordKhataPaymentDialog } from "./RecordKhataPaymentDialog";
 import { WhatsAppReminderDialog } from "./WhatsAppReminderDialog";
@@ -269,15 +268,16 @@ export function KhataReceivablesView() {
 
       {/* 3. Toolbar Row: Search Pill & Segmented Filter Pills */}
       <KhataToolbar
-        searchQuery={searchQuery}
+        search={searchQuery}
         onSearchChange={setSearchQuery}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusFilterChange={(val) => setStatusFilter(val as KhataFilterOption)}
         counts={counts}
       />
 
       {/* 4. Khata Accounts & Ledger Table (Figma Node 3456:49411) */}
-      <KhataTable
+      <KhataAccountsTable
+        role="owner"
         accounts={paginatedAccounts}
         currentPage={page}
         pageSize={pageSize}
@@ -287,6 +287,7 @@ export function KhataReceivablesView() {
         onSelectAccount={handleSelectAccount}
         onRecordPayment={handleOpenRecordPayment}
         onSendWhatsApp={handleOpenWhatsAppReminder}
+        onAdjustLimit={handleOpenAdjustLimit}
       />
 
       {/* 5. Customer Khata Ledger Detail Drawer */}

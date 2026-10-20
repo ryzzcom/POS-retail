@@ -25,7 +25,8 @@ interface KhataDetailDrawerProps {
   onClose: () => void;
   onRecordPayment: (account: KhataAccount) => void;
   onSendWhatsApp: (account: KhataAccount) => void;
-  onAdjustLimit: (account: KhataAccount) => void;
+  onAdjustLimit?: (account: KhataAccount) => void;
+  canAdjustLimit?: boolean;
 }
 
 export function KhataDetailDrawer({
@@ -35,6 +36,7 @@ export function KhataDetailDrawer({
   onRecordPayment,
   onSendWhatsApp,
   onAdjustLimit,
+  canAdjustLimit = true,
 }: KhataDetailDrawerProps) {
   const [activeTab, setActiveTab] = React.useState<"ledger" | "details">("ledger");
 
@@ -71,27 +73,33 @@ export function KhataDetailDrawer({
                 WhatsApp reminder
               </Button>
 
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onAdjustLimit(account)}
-                leftIcon={<Sliders className="size-4" />}
-                className="text-xs sm:text-sm px-3"
-              >
-                Adjust
-              </Button>
+              {canAdjustLimit && onAdjustLimit && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onAdjustLimit(account)}
+                  leftIcon={<Sliders className="size-4" />}
+                  className="text-xs sm:text-sm px-3"
+                >
+                  Adjust
+                </Button>
+              )}
             </>
           ) : (
             <div className="flex items-center justify-between w-full">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onAdjustLimit(account)}
-                leftIcon={<Sliders className="size-4" />}
-                className="text-xs sm:text-sm"
-              >
-                Adjust limit
-              </Button>
+              {canAdjustLimit && onAdjustLimit ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onAdjustLimit(account)}
+                  leftIcon={<Sliders className="size-4" />}
+                  className="text-xs sm:text-sm"
+                >
+                  Adjust limit
+                </Button>
+              ) : (
+                <div />
+              )}
               <Button
                 type="button"
                 variant="outline"

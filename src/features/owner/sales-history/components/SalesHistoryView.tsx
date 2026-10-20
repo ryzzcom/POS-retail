@@ -3,9 +3,8 @@
 import * as React from "react";
 import { SALES_RECEIPTS_MOCK_DATA } from "../constants/sales-history-mock";
 import { PaymentMethod, ReceiptSummary } from "../types/sales-history.types";
+import { SalesTable, SalesToolbar } from "@/components/common";
 import { SalesHistoryHeader } from "./SalesHistoryHeader";
-import { SalesHistoryToolbar } from "./SalesHistoryToolbar";
-import { SalesHistoryTable } from "./SalesHistoryTable";
 import { SaleReceiptDrawer } from "./SaleReceiptDrawer";
 
 export function SalesHistoryView() {
@@ -31,8 +30,8 @@ export function SalesHistoryView() {
     setCurrentPage(1);
   };
 
-  const handleMethodChange = (method: PaymentMethod) => {
-    setSelectedMethod(method);
+  const handleMethodChange = (method: string) => {
+    setSelectedMethod(method as PaymentMethod);
     setCurrentPage(1);
   };
 
@@ -94,17 +93,18 @@ export function SalesHistoryView() {
 
       {/* 2. Toolbar Row (Search Pill + Payment Method Segmented Filter) */}
       <div className="flex flex-col gap-6">
-        <SalesHistoryToolbar
-          searchQuery={searchQuery}
+        <SalesToolbar
+          search={searchQuery}
           onSearchChange={handleSearchChange}
           selectedMethod={selectedMethod}
           onMethodChange={handleMethodChange}
         />
 
         {/* 3. Receipts DataTable with Integrated Pagination (Figma Node 3386:16476) */}
-        <SalesHistoryTable
-          receipts={paginatedReceipts}
-          onSelectReceipt={handleSelectReceipt}
+        <SalesTable<ReceiptSummary>
+          sales={paginatedReceipts}
+          showCashierColumn={true}
+          onSelectSale={handleSelectReceipt}
           pagination={{
             currentPage,
             totalPages,
