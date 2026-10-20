@@ -47,10 +47,67 @@ export function KhataDetailDrawer({
       title={account.customerName}
       subtitle={`Khata Ledger · ${account.customerPhone}`}
       widthClass="w-full sm:max-w-[500px] md:max-w-[560px]"
+      footer={
+        <div className="flex items-center gap-2.5 w-full">
+          {account.balance > 0 ? (
+            <>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => onRecordPayment(account)}
+                leftIcon={<CreditCard className="size-4" />}
+                className="flex-1 text-xs sm:text-sm"
+              >
+                Record payment
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onSendWhatsApp(account)}
+                leftIcon={<MessageCircle className="size-4 text-status-success" />}
+                className="flex-1 text-xs sm:text-sm"
+              >
+                WhatsApp reminder
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onAdjustLimit(account)}
+                leftIcon={<Sliders className="size-4" />}
+                className="text-xs sm:text-sm px-3"
+              >
+                Adjust
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onAdjustLimit(account)}
+                leftIcon={<Sliders className="size-4" />}
+                className="text-xs sm:text-sm"
+              >
+                Adjust limit
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="text-xs sm:text-sm px-5"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+        </div>
+      }
     >
       <div className="flex flex-col gap-5 p-4 sm:p-6 select-none">
         {/* 1. Account Hero Card */}
-        <div className="p-4 sm:p-5 rounded-[20px] bg-card border border-default flex flex-col gap-4 shadow-xs">
+        <div className="p-4 sm:p-5 rounded-[14px] sm:rounded-[16px] bg-card border border-default flex flex-col gap-4 shadow-xs">
           <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col">
               <span className="font-sans text-xs text-body">
@@ -135,7 +192,7 @@ export function KhataDetailDrawer({
                   return (
                     <div
                       key={entry.id}
-                      className="p-3 sm:p-3.5 rounded-xl bg-card border border-default/60 flex items-start justify-between gap-3 shadow-2xs"
+                      className="p-3 sm:p-3.5 rounded-[14px] sm:rounded-[16px] bg-card border border-default/60 flex items-start justify-between gap-3 shadow-2xs"
                     >
                       <div className="flex items-start gap-2.5">
                         <div
@@ -188,7 +245,7 @@ export function KhataDetailDrawer({
 
         {activeTab === "details" && (
           <div className="flex flex-col gap-4">
-            <div className="p-4 rounded-xl bg-card border border-default/60 flex flex-col gap-3 font-sans text-xs sm:text-sm">
+            <div className="p-4 rounded-[14px] sm:rounded-[16px] bg-card border border-default/60 flex flex-col gap-3 font-sans text-xs sm:text-sm">
               <div className="flex justify-between items-center py-1 border-b border-default/40">
                 <span className="text-body flex items-center gap-2">
                   <Clock className="size-4 text-muted" />
@@ -231,43 +288,6 @@ export function KhataDetailDrawer({
             </div>
           </div>
         )}
-
-        {/* 4. Action Buttons Footer */}
-        <div className="flex items-center gap-2.5 pt-3 border-t border-default/50 flex-wrap">
-          {account.balance > 0 && (
-            <>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => onRecordPayment(account)}
-                leftIcon={<CreditCard className="size-4" />}
-                className="flex-1 text-xs sm:text-sm"
-              >
-                Record payment
-              </Button>
-
-              <Button
-                type="button"
-                variant="white"
-                onClick={() => onSendWhatsApp(account)}
-                leftIcon={<MessageCircle className="size-4 text-status-success" />}
-                className="flex-1 text-xs sm:text-sm"
-              >
-                WhatsApp reminder
-              </Button>
-            </>
-          )}
-
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onAdjustLimit(account)}
-            leftIcon={<Sliders className="size-4" />}
-            className="text-xs sm:text-sm"
-          >
-            Adjust limit
-          </Button>
-        </div>
       </div>
     </Drawer>
   );

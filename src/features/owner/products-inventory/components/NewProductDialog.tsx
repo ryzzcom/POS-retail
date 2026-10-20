@@ -172,7 +172,7 @@ export function NewProductDialog({
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 select-none">
         {/* Product Name (Figma Node 3404:28823) */}
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Product name
           </label>
           <input
@@ -189,7 +189,7 @@ export function NewProductDialog({
         {/* Design Code & Category Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+            <label className="font-sans font-medium text-xs sm:text-sm text-heading">
               Design / style code
             </label>
             <input
@@ -227,7 +227,7 @@ export function NewProductDialog({
         {/* Sub-Category, Brand, Season */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+            <label className="font-sans font-medium text-xs sm:text-sm text-heading">
               Sub-category
             </label>
             <input
@@ -239,7 +239,7 @@ export function NewProductDialog({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+            <label className="font-sans font-medium text-xs sm:text-sm text-heading">
               Brand
             </label>
             <input
@@ -254,7 +254,7 @@ export function NewProductDialog({
         {/* Season & Min Price */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+            <label className="font-sans font-medium text-xs sm:text-sm text-heading">
               Season
             </label>
             <input
@@ -266,7 +266,7 @@ export function NewProductDialog({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+            <label className="font-sans font-medium text-xs sm:text-sm text-heading">
               Minimum selling price (Rs.)
             </label>
             <input
@@ -283,7 +283,7 @@ export function NewProductDialog({
 
         {/* Image Upload Box */}
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Product media
           </label>
           <div className="w-full p-4 rounded-xl border border-dashed border-default bg-page/30 flex items-center gap-4">

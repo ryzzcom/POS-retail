@@ -78,7 +78,7 @@ export function AdjustStockDialog({
         <input type="hidden" {...register("variantId")} />
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Adjustment Type
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -104,7 +104,7 @@ export function AdjustStockDialog({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Quantity
           </label>
           <input
@@ -140,7 +140,7 @@ export function AdjustStockDialog({
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Notes / Reference
           </label>
           <input

@@ -53,7 +53,7 @@ export function WhatsAppReminderDialog({
       subtitle={`Send balance statement to ${account.customerName} (${account.customerPhone})`}
       maxWidthClass="w-full sm:max-w-[540px]"
     >
-      <div className="flex flex-col gap-4 p-5 sm:p-6 select-none">
+      <div className="flex flex-col gap-4 select-none">
         {/* Recipient Card */}
         <div className="p-3.5 rounded-xl bg-subtle/50 border border-default flex items-center justify-between">
           <div className="flex flex-col">

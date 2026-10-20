@@ -4,6 +4,8 @@ import * as React from "react";
 import { Barcode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface StocktakeViewProps {
   className?: string;
@@ -49,7 +51,7 @@ export function StocktakeView({ className }: StocktakeViewProps) {
           {/* 1. Count Scope Setup Card (Figma Node 3396:23483) */}
           <div className="w-full bg-card rounded-[22px] border border-default/50 p-6 sm:p-7 shadow-xs flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className="font-heading font-medium text-sm text-heading">
+              <label className="font-sans font-medium text-sm text-heading">
                 Count scope
               </label>
               <div className="flex items-center gap-3 flex-wrap">
@@ -67,13 +69,14 @@ export function StocktakeView({ className }: StocktakeViewProps) {
                   aria-label="Count scope"
                 />
 
-                <button
+                <Button
                   type="button"
+                  variant="primary"
                   onClick={() => setIsInProgress(true)}
-                  className="h-11 px-6 rounded-full bg-primary font-sans font-medium text-xs sm:text-sm text-dark-primary hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
+                  className="rounded-full"
                 >
                   Start Stocktake
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -108,30 +111,32 @@ export function StocktakeView({ className }: StocktakeViewProps) {
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative">
-                <input
+              <div className="w-56">
+                <Input
                   type="text"
                   placeholder="Scan label → +1"
-                  className="h-10 pl-9 pr-4 rounded-lg bg-page/50 border border-default/60 font-sans text-xs text-heading placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  leftIcon={<Barcode className="size-4" />}
+                  className="h-10 text-xs"
                 />
-                <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted pointer-events-none" />
               </div>
 
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setIsInProgress(false)}
-                className="font-sans text-xs sm:text-sm text-body hover:text-heading cursor-pointer px-3"
+                className="text-xs sm:text-sm"
               >
                 Cancel count
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="primary"
                 onClick={() => setIsInProgress(false)}
-                className="h-10 px-5 rounded-full bg-primary font-sans font-medium text-xs sm:text-sm text-dark-primary hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
+                className="text-xs sm:text-sm rounded-full"
               >
                 Post Differences
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -165,12 +170,14 @@ export function StocktakeView({ className }: StocktakeViewProps) {
                         {item.systemQty}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <input
-                          type="number"
-                          value={counted}
-                          onChange={(e) => handleCountChange(item.id, e.target.value)}
-                          className="w-18 h-8 rounded-md border border-default/60 bg-page/30 text-center font-sans text-xs text-heading focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                        />
+                        <div className="w-20 mx-auto">
+                          <Input
+                            type="number"
+                            value={counted}
+                            onChange={(e) => handleCountChange(item.id, e.target.value)}
+                            className="h-8 text-center text-xs"
+                          />
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-right font-medium">
                         {diff !== null ? (

@@ -28,6 +28,10 @@ export function DashboardGreeting({
 }: DashboardGreetingProps) {
   const [selected, setSelected] = React.useState<TimeRangeFilter>(activeFilter);
 
+  React.useEffect(() => {
+    setSelected(activeFilter);
+  }, [activeFilter]);
+
   const handleSelect = (filter: TimeRangeFilter) => {
     setSelected(filter);
     onFilterChange?.(filter);

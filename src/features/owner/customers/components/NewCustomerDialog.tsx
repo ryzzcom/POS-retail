@@ -199,7 +199,7 @@ export function NewCustomerDialog({
 
         {/* Customer Notes */}
         <div className="flex flex-col gap-1.5">
-          <label className="font-heading font-medium text-xs sm:text-sm text-heading">
+          <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Style & Fitting Notes
           </label>
           <textarea

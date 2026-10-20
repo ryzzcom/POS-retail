@@ -117,7 +117,7 @@ export function RevenueHeroCard({
           {/* Cash Tender */}
           <div className="flex flex-col">
             <span className="font-sans text-xs text-body">Cash</span>
-            <span className="font-sans font-medium text-sm text-heading mt-0.5">
+            <span className="font-heading font-semibold text-sm text-heading mt-0.5">
               {formatPKR(profit.tenders.cash)}
             </span>
           </div>
@@ -125,7 +125,7 @@ export function RevenueHeroCard({
           {/* Card / Digital Tender */}
           <div className="flex flex-col">
             <span className="font-sans text-xs text-body">Card / digital</span>
-            <span className="font-sans font-medium text-sm text-heading mt-0.5">
+            <span className="font-heading font-semibold text-sm text-heading mt-0.5">
               {formatPKR(profit.tenders.cardDigital)}
             </span>
           </div>
@@ -133,7 +133,7 @@ export function RevenueHeroCard({
           {/* On Khata (Customer Credit) */}
           <div className="flex flex-col">
             <span className="font-sans text-xs text-body">On Khata</span>
-            <span className="font-sans font-medium text-sm text-heading mt-0.5">
+            <span className="font-heading font-semibold text-sm text-heading mt-0.5">
               {formatPKR(profit.tenders.onKhata)}
             </span>
           </div>

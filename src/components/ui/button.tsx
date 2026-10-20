@@ -16,31 +16,31 @@ const buttonVariants = cva(
 
         /* Figma: Property 1=Secondary Button (#c9ab6a) */
         secondary:
-          "bg-accent text-white border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
+          "bg-accent text-dark-primary border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
 
         /* Brand Secondary Olive (#6b7a5e) */
         "brand-secondary":
-          "bg-secondary text-white shadow-sm hover:bg-secondary/90 focus-visible:ring-secondary",
+          "bg-secondary text-dark-primary shadow-sm hover:bg-secondary/90 focus-visible:ring-secondary",
 
         /* Brand Accent / Gold (#c9ab6a) */
         accent:
-          "bg-accent text-white border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
+          "bg-accent text-dark-primary border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
         gold:
-          "bg-accent text-white border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
+          "bg-accent text-dark-primary border border-accent shadow-sm hover:bg-accent/90 focus-visible:ring-accent",
 
         /* Figma: Property 1=Success Button (#16a34a) */
         success:
-          "bg-status-success text-white shadow-sm hover:bg-status-success/90 focus-visible:ring-status-success",
+          "bg-status-success text-dark-primary shadow-sm hover:bg-status-success/90 focus-visible:ring-status-success",
 
         /* Figma: Property 1=Danger Button (#dc2626) */
         danger:
-          "bg-status-error text-white shadow-sm hover:bg-status-error/90 focus-visible:ring-status-error",
+          "bg-status-error text-dark-primary shadow-sm hover:bg-status-error/90 focus-visible:ring-status-error",
         destructive:
-          "bg-status-error text-white shadow-sm hover:bg-status-error/90 focus-visible:ring-status-error",
+          "bg-status-error text-dark-primary shadow-sm hover:bg-status-error/90 focus-visible:ring-status-error",
 
-        /* Figma: Property 1=gradient (Royal Blue Gradient) */
+        /* Figma: Property 1=gradient (Deep Brand Gradient) */
         gradient:
-          "bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 text-white shadow-sm hover:opacity-95 focus-visible:ring-blue-600",
+          "bg-gradient-to-r from-primary via-secondary to-primary text-dark-primary shadow-sm hover:opacity-95 focus-visible:ring-primary",
 
         /* Figma: Property 1=white (Card background with subtle border) */
         white:

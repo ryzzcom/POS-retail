@@ -1,12 +1,18 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { TemplateItem } from "../types/whatsapp-campaigns.types";
+import {
+  templateEditorSchema,
+  TemplateEditorFormValues,
+} from "../schemas/whatsapp-campaigns.schemas";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Send, Smartphone } from "lucide-react";
+import { Send, Smartphone } from "lucide-react";
 
 interface TemplateEditorModalProps {
   open: boolean;
@@ -23,21 +29,44 @@ export function TemplateEditorModal({
   onSaveTemplate,
   onSendTest,
 }: TemplateEditorModalProps) {
-  const [bodyText, setBodyText] = React.useState(template?.body || "");
   const [testPhone, setTestPhone] = React.useState("+92 300 1234567");
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isDirty, isValid },
+  } = useForm<TemplateEditorFormValues>({
+    resolver: zodResolver(templateEditorSchema),
+    mode: "onChange",
+    defaultValues: {
+      name: template?.name || "",
+      category: template?.category || "Digital receipt",
+      body: template?.body || "",
+    },
+  });
 
   React.useEffect(() => {
     if (template) {
-      setBodyText(template.body);
+      reset({
+        name: template.name,
+        category: template.category,
+        body: template.body,
+      });
     }
-  }, [template]);
+  }, [template, reset]);
 
   if (!template) return null;
 
-  const handleSave = () => {
+  const currentBody = watch("body") || "";
+
+  const onSubmit = (values: TemplateEditorFormValues) => {
     onSaveTemplate({
       ...template,
-      body: bodyText,
+      name: values.name,
+      category: values.category,
+      body: values.body,
     });
     onClose();
   };
@@ -47,7 +76,7 @@ export function TemplateEditorModal({
   };
 
   // Preview replacement of variables with dummy values
-  const previewText = bodyText
+  const previewText = currentBody
     .replace(/\{\{name\}\}/g, "Fatima Raza")
     .replace(/\{\{store\}\}/g, "Noor Pret & Boutique")
     .replace(/\{\{receipt\}\}/g, "NP-010420")
@@ -64,8 +93,31 @@ export function TemplateEditorModal({
       title={`Edit Template: ${template.name}`}
       subtitle="Meta WhatsApp Cloud API pre-approved template with dynamic placeholder tokens."
       maxWidthClass="w-full sm:max-w-2xl"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            onClick={onClose}
+            className="px-6 rounded-full"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="default"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!isDirty || !isValid}
+            className="px-7 rounded-full"
+          >
+            Save Changes
+          </Button>
+        </div>
+      }
     >
-      <div className="flex flex-col gap-5 pt-2 select-none">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 pt-2 select-none">
         {/* Category & Status */}
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="delivered" size="sm">
@@ -82,20 +134,42 @@ export function TemplateEditorModal({
           </span>
         </div>
 
+        {/* Template Name & Category Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Template Name *"
+            {...register("name")}
+            error={errors.name?.message}
+          />
+          <Input
+            label="Category *"
+            {...register("category")}
+            error={errors.category?.message}
+          />
+        </div>
+
         {/* Template Body Editor */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <label className="font-sans text-xs sm:text-sm font-medium text-heading">
-            Template Message Body
+            Template Message Body *
           </label>
           <textarea
             rows={4}
-            value={bodyText}
-            onChange={(e) => setBodyText(e.target.value)}
+            {...register("body")}
             className="w-full p-3.5 rounded-xl border border-default bg-card font-sans text-xs sm:text-sm text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent leading-relaxed resize-none"
           />
-          <span className="text-[11px] text-muted">
-            Placeholder variables like <code className="text-primary font-mono font-semibold">{"{{name}}"}</code> and <code className="text-primary font-mono font-semibold">{"{{store}}"}</code> are automatically populated by the POS engine.
-          </span>
+          {errors.body?.message ? (
+            <p className="text-xs text-status-error font-sans">
+              {errors.body.message}
+            </p>
+          ) : (
+            <span className="text-[11px] text-muted">
+              Placeholder variables like{" "}
+              <code className="text-primary font-mono font-semibold">{"{{name}}"}</code> and{" "}
+              <code className="text-primary font-mono font-semibold">{"{{store}}"}</code> are
+              automatically populated by the POS engine.
+            </span>
+          )}
         </div>
 
         {/* Live Preview Bubble */}
@@ -130,29 +204,7 @@ export function TemplateEditorModal({
             <span>Send Test</span>
           </Button>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-default/30">
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            onClick={onClose}
-            className="px-6 rounded-full"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="default"
-            onClick={handleSave}
-            className="px-7 rounded-full"
-          >
-            Save Changes
-          </Button>
-        </div>
-      </div>
+      </form>
     </Dialog>
   );
 }

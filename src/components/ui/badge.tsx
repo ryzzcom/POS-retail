@@ -11,13 +11,13 @@ const badgeVariants = cva(
         default:
           "border-transparent bg-primary text-dark-primary shadow-xs hover:bg-primary/90",
         secondary:
-          "border-transparent bg-secondary text-white hover:bg-secondary/90",
+          "border-transparent bg-secondary text-dark-primary hover:bg-secondary/90",
         gold:
-          "border-transparent bg-accent text-white hover:bg-accent/90",
+          "border-transparent bg-accent text-dark-primary hover:bg-accent/90",
         accent:
-          "border-transparent bg-accent text-white hover:bg-accent/90",
+          "border-transparent bg-accent text-dark-primary hover:bg-accent/90",
         destructive:
-          "border-transparent bg-status-error text-white shadow-xs hover:bg-status-error/90",
+          "border-transparent bg-status-error text-dark-primary shadow-xs hover:bg-status-error/90",
         outline:
           "text-heading border-default bg-transparent",
 

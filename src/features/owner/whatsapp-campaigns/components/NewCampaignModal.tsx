@@ -246,7 +246,7 @@ export function NewCampaignModal({
 
                 <div className="flex items-center justify-end gap-1 text-[10px] text-muted pt-1">
                   <span>10:30 PM</span>
-                  <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
+                  <CheckCheck className="w-3.5 h-3.5 text-accent" />
                 </div>
               </div>
             </div>

@@ -13,7 +13,7 @@ export function SettingsView() {
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("store-profile");
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="w-full flex flex-col gap-6 lg:gap-8 pb-6 animate-in fade-in-50 duration-200 select-none">
       {/* Header with Title and 5-Tab Navigation Strip */}
       <SettingsHeader activeTab={activeTab} onTabChange={setActiveTab} />
 

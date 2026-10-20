@@ -7,6 +7,7 @@ import {
   PurchasesTabId,
   PurchaseItem,
   SupplierItem,
+  SupplierCategory,
   SupplierLedgerEntry,
   PurchasesSummaryStats,
 } from "../types/purchases-suppliers.types";
@@ -29,6 +30,8 @@ import { AddPurchaseModal } from "./AddPurchaseModal";
 import { SupplierLedgerDrawer } from "./SupplierLedgerDrawer";
 import { PurchaseDetailDrawer } from "./PurchaseDetailDrawer";
 import { RecordSupplierPaymentDialog } from "./RecordSupplierPaymentDialog";
+import { StatCard } from "@/components/common";
+import { Tag, Building2, CreditCard } from "lucide-react";
 
 export function PurchasesSuppliersView() {
   const [activeTab, setActiveTab] = React.useState<PurchasesTabId>("purchases");
@@ -91,7 +94,7 @@ export function PurchasesSuppliersView() {
     const newSupplier: SupplierItem = {
       id: `sup-${Date.now()}`,
       name: values.name,
-      category: values.category as any,
+      category: values.category as SupplierCategory,
       description: `${values.category}. ${values.paymentTerms}.`,
       contactPerson: values.contactPerson,
       phone: values.phone,
@@ -342,6 +345,29 @@ export function PurchasesSuppliersView() {
         onOpenAddSupplier={() => setIsAddSupplierOpen(true)}
         onExportCsv={handleExportCsv}
       />
+
+      {/* Top KPI Cards Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+        <StatCard
+          label="Open purchase orders"
+          value={summary.openOrdersCount}
+          subtext="Orders awaiting receipt"
+          icon={Tag}
+        />
+        <StatCard
+          label="Pending delivery"
+          value={formatPKR(summary.pendingDeliveryPKR)}
+          subtext="Ordered value still to arrive"
+          icon={Building2}
+        />
+        <StatCard
+          label="Total payable"
+          value={formatPKR(summary.totalPayablePKR)}
+          subtext="Outstanding balance to suppliers"
+          valueClassName="text-status-error"
+          icon={CreditCard}
+        />
+      </div>
 
       {/* 2. Active Tab Content */}
       {activeTab === "purchases" && (

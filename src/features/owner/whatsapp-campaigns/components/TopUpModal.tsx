@@ -37,6 +37,29 @@ export function TopUpModal({
       title="Top-Up WhatsApp Message Credits"
       subtitle="Instantly add internal broadcast credits to your store's WhatsApp pool."
       maxWidthClass="w-full sm:max-w-md"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            size="default"
+            onClick={onClose}
+            className="px-6 rounded-full"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="default"
+            onClick={handleConfirm}
+            className="px-7 rounded-full gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Confirm & Recharge</span>
+          </Button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-5 pt-2 select-none">
         {/* Pack Summary Box */}
@@ -79,29 +102,6 @@ export function TopUpModal({
         <div className="flex items-center gap-2 text-xs text-muted">
           <ShieldCheck className="w-4 h-4 text-status-success shrink-0" />
           <span>Billed directly to your registered store business account via 1Link / Card.</span>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-default/30">
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            onClick={onClose}
-            className="px-6 rounded-full"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="default"
-            onClick={handleConfirm}
-            className="px-7 rounded-full gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Confirm & Recharge</span>
-          </Button>
         </div>
       </div>
     </Dialog>

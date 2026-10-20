@@ -69,8 +69,10 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        "w-full border border-default/40 bg-theme shadow-xs overflow-hidden select-none flex flex-col",
-        roundedTop ? "rounded-[22px]" : "rounded-t-none rounded-b-[18px]",
+        "w-full bg-theme overflow-hidden select-none flex flex-col",
+        roundedTop
+          ? "border border-default/40 rounded-[22px] shadow-xs"
+          : "border-0 border-t border-default/40 rounded-none shadow-none",
         className
       )}
     >

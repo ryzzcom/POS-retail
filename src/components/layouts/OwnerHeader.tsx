@@ -42,7 +42,7 @@ export function OwnerHeader({
   date = "Sunday, 11 October 2026",
   userName = "Ayesha Khan",
   userRole = "Store Owner",
-  posHref = "/counter/1",
+  posHref = "/noor-pret/counter/1/pos",
   onLogout,
   onOpenMobileMenu,
   onToggleMobileMenu,

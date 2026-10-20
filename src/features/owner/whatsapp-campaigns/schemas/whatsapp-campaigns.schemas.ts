@@ -46,3 +46,30 @@ export const connectionSettingsSchema = z.object({
 });
 
 export type ConnectionSettingsFormValues = z.infer<typeof connectionSettingsSchema>;
+
+export const templateCategoryEnum = [
+  "Digital receipt",
+  "Loyalty update",
+  "New arrivals",
+  "Khata reminder",
+  "Review request",
+  "Marketing",
+] as const;
+
+export const templateEditorSchema = z.object({
+  name: z.string().min(2, "Template name is required"),
+  category: z.enum(templateCategoryEnum, {
+    errorMap: () => ({ message: "Please select a valid category" }),
+  }),
+  body: z
+    .string()
+    .min(10, "Template body must be at least 10 characters")
+    .refine(
+      (val) => /\{\{\w+\}\}/.test(val),
+      "Template message body must contain at least one dynamic token like {{name}}"
+    ),
+});
+
+export type TemplateEditorFormValues = z.infer<typeof templateEditorSchema>;
+
+

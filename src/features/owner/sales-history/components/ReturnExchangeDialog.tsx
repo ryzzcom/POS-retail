@@ -103,6 +103,36 @@ export function ReturnExchangeDialog({
       title={`Return / exchange · ${receiptNumber}`}
       subtitle="Sold 0 days ago · policy 7 days. Refunds are worked out from what the customer actually paid per item."
       maxWidthClass="sm:max-w-[680px]"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-[10px] px-5 text-xs h-9"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleComplete}
+            disabled={returnQty === 0 || isSubmitting || isCompleted}
+            isLoading={isSubmitting}
+            className="rounded-[10px] px-6 text-xs h-9"
+          >
+            {isCompleted ? (
+              <span className="flex items-center gap-1.5">
+                <Check className="size-3.5" /> Return Recorded
+              </span>
+            ) : (
+              "Complete return"
+            )}
+          </Button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-5 select-none">
         {/* 1. Returnable Items Table */}
@@ -257,36 +287,6 @@ export function ReturnExchangeDialog({
               {formatPKR(refundAmount)}
             </span>
           </div>
-        </div>
-
-        {/* 4. Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="rounded-[10px] px-5 text-xs h-9"
-          >
-            Cancel
-          </Button>
-
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleComplete}
-            disabled={returnQty === 0 || isSubmitting || isCompleted}
-            isLoading={isSubmitting}
-            className="rounded-[10px] px-6 text-xs h-9"
-          >
-            {isCompleted ? (
-              <span className="flex items-center gap-1.5">
-                <Check className="size-3.5" /> Return Recorded
-              </span>
-            ) : (
-              "Complete return"
-            )}
-          </Button>
         </div>
       </div>
     </Dialog>

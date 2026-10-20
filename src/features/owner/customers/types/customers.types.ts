@@ -47,3 +47,15 @@ export interface CustomerSummaryMetrics {
   totalKhataReceivable: number;
   goldMembersCount: number;
 }
+
+export interface PointHistoryItem {
+  id: string;
+  type: "earned" | "redeemed" | "manual_add" | "manual_deduct";
+  amount: number;
+  title: string;
+  subtitle: string;
+  date: string;
+  badgeLabel: string;
+  badgeVariant: "success" | "neutral" | "gold" | "failed";
+}
+

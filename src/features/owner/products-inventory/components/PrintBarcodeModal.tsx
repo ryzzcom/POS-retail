@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Printer } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatPKR } from "@/lib/formatters";
 import { ProductItem, ProductVariant } from "../types/products-inventory.types";
@@ -32,6 +34,28 @@ export function PrintBarcodeModal({
       title="Print Barcode Labels"
       subtitle={`${product.name} — ${variant.color} • ${variant.size}`}
       maxWidthClass="sm:max-w-[460px]"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => {
+              window.print();
+              onClose();
+            }}
+          >
+            <Printer className="size-4 shrink-0" />
+            <span>Print {labelQty} Labels</span>
+          </Button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-5 select-none">
         {/* Label Preview Card */}
@@ -71,17 +95,19 @@ export function PrintBarcodeModal({
         {/* Options */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <label className="font-sans text-xs sm:text-sm text-heading">
+            <span className="font-sans text-xs sm:text-sm text-heading">
               Number of labels
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="500"
-              value={labelQty}
-              onChange={(e) => setLabelQty(parseInt(e.target.value, 10) || 1)}
-              className="w-20 h-9 px-3 rounded-lg bg-card border border-default font-sans text-xs text-heading text-center"
-            />
+            </span>
+            <div className="w-24">
+              <Input
+                type="number"
+                min={1}
+                max={500}
+                value={labelQty}
+                onChange={(e) => setLabelQty(parseInt(e.target.value, 10) || 1)}
+                className="text-center font-sans text-xs text-heading h-9"
+              />
+            </div>
           </div>
 
           <Checkbox
@@ -90,28 +116,6 @@ export function PrintBarcodeModal({
             checked={includePrice}
             onChange={(e) => setIncludePrice(e.target.checked)}
           />
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-default/50">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 px-5 rounded-full border border-default bg-card font-sans font-medium text-xs sm:text-sm text-heading hover:bg-subtle/30 transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              window.print();
-              onClose();
-            }}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-full bg-primary font-sans font-medium text-xs sm:text-sm text-dark-primary hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
-          >
-            <Printer className="size-4 shrink-0" />
-            <span>Print {labelQty} Labels</span>
-          </button>
         </div>
       </div>
     </Dialog>

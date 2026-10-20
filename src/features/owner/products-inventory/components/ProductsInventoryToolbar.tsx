@@ -90,16 +90,18 @@ export function ProductsInventoryToolbar({
         />
 
         {/* Low Stock Toggle Checkbox */}
-        <label className="inline-flex items-center gap-2 h-11 px-3.5 sm:px-4 rounded-full bg-card/60 border border-default/40 hover:border-default transition-colors cursor-pointer select-none shrink-0 shadow-xs">
+        <div className="inline-flex items-center h-11 px-3.5 sm:px-4 rounded-full bg-card/60 border border-default/40 hover:border-default transition-colors select-none shrink-0 shadow-xs">
           <Checkbox
             checked={lowStockOnly}
             onChange={(e) => onLowStockToggle(e.target.checked)}
             id="low-stock-checkbox"
+            label={
+              <span className="font-sans text-xs sm:text-sm font-medium text-heading whitespace-nowrap">
+                Low stock only
+              </span>
+            }
           />
-          <span className="font-sans text-xs sm:text-sm font-medium text-heading whitespace-nowrap">
-            Low stock only
-          </span>
-        </label>
+        </div>
       </div>
     </div>
   );

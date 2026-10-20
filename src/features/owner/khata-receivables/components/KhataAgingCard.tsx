@@ -4,6 +4,7 @@ import * as React from "react";
 import { formatPKR } from "@/lib/formatters";
 import { KhataAgingSummary } from "../types/khata.types";
 import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/common";
 
 interface KhataAgingCardProps {
   summary: KhataAgingSummary;
@@ -65,39 +66,27 @@ export function KhataAgingCard({ summary, className }: KhataAgingCardProps) {
       </div>
 
       {/* 3. Aging Legend Items (Figma Node 3456:49383) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 pt-1">
-        {/* Item 1: Within Terms */}
-        <div className="flex items-center gap-2.5">
-          <span className="size-2.5 sm:size-3 rounded-full bg-primary shrink-0" />
-          <span className="font-sans text-xs sm:text-sm text-body whitespace-nowrap">
-            Within terms
-          </span>
-          <span className="font-heading font-medium text-xs sm:text-sm text-heading ml-1 whitespace-nowrap">
-            {formatPKR(summary.withinTermsAmount)}
-          </span>
-        </div>
-
-        {/* Item 2: 1–30 Days Overdue */}
-        <div className="flex items-center gap-2.5">
-          <span className="size-2.5 sm:size-3 rounded-full bg-accent shrink-0" />
-          <span className="font-sans text-xs sm:text-sm text-body whitespace-nowrap">
-            1–30 days overdue
-          </span>
-          <span className="font-heading font-medium text-xs sm:text-sm text-heading ml-1 whitespace-nowrap">
-            {formatPKR(summary.overdue1to30Amount)}
-          </span>
-        </div>
-
-        {/* Item 3: 31–60+ Days Overdue */}
-        <div className="flex items-center gap-2.5">
-          <span className="size-2.5 sm:size-3 rounded-full bg-status-error shrink-0" />
-          <span className="font-sans text-xs sm:text-sm text-body whitespace-nowrap">
-            31–60+ days overdue
-          </span>
-          <span className="font-heading font-medium text-xs sm:text-sm text-heading ml-1 whitespace-nowrap">
-            {formatPKR(summary.overdue31PlusAmount)}
-          </span>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
+        <StatCard
+          label="Within terms"
+          value={formatPKR(summary.withinTermsAmount)}
+          badge={<span className="size-3 rounded-full bg-primary inline-block" />}
+          className="bg-theme/70 border-default/40 p-3.5 sm:p-4 rounded-xl"
+        />
+        <StatCard
+          label="1–30 days overdue"
+          value={formatPKR(summary.overdue1to30Amount)}
+          valueClassName="text-accent"
+          badge={<span className="size-3 rounded-full bg-accent inline-block" />}
+          className="bg-theme/70 border-default/40 p-3.5 sm:p-4 rounded-xl"
+        />
+        <StatCard
+          label="31–60+ days overdue"
+          value={formatPKR(summary.overdue31PlusAmount)}
+          valueClassName="text-status-error"
+          badge={<span className="size-3 rounded-full bg-status-error inline-block" />}
+          className="bg-theme/70 border-default/40 p-3.5 sm:p-4 rounded-xl"
+        />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { DataTable, ColumnDef } from "@/components/data-display/data-table";
 import { Switch } from "@/components/ui/switch";
 import { AddStaffDialog } from "./AddStaffDialog";
 import { Dialog } from "@/components/ui/dialog";
+import { StatCard } from "@/components/common";
 import {
   Users,
   UserCheck,
@@ -254,36 +255,29 @@ export function TeamPermissionsTab() {
   return (
     <div className="space-y-6">
       {/* 4-Metric Summary KPI Strip */}
-      <div className="bg-card rounded-[18px] border border-default/50 p-4 sm:p-6 shadow-xs">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-default/40">
-          <div>
-            <p className="text-xs font-sans text-body">Total staff accounts</p>
-            <p className="font-heading font-semibold text-lg sm:text-2xl text-heading mt-1">
-              {totalStaff}
-            </p>
-          </div>
-
-          <div className="pt-3 sm:pt-0 sm:pl-6">
-            <p className="text-xs font-sans text-body">Active cashiers</p>
-            <p className="font-heading font-semibold text-lg sm:text-2xl text-status-success mt-1">
-              {activeCashiers}
-            </p>
-          </div>
-
-          <div className="pt-3 sm:pt-0 sm:pl-6">
-            <p className="text-xs font-sans text-body">Store managers</p>
-            <p className="font-heading font-semibold text-lg sm:text-2xl text-heading mt-1">
-              {storeManagers}
-            </p>
-          </div>
-
-          <div className="pt-3 sm:pt-0 sm:pl-6">
-            <p className="text-xs font-sans text-body">Active POS terminals</p>
-            <p className="font-heading font-semibold text-lg sm:text-2xl text-accent mt-1">
-              {activeTerminals}
-            </p>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
+        <StatCard
+          label="Total staff accounts"
+          value={totalStaff}
+          icon={Users}
+        />
+        <StatCard
+          label="Active cashiers"
+          value={activeCashiers}
+          valueClassName="text-status-success"
+          icon={UserCheck}
+        />
+        <StatCard
+          label="Store managers"
+          value={storeManagers}
+          icon={ShieldAlert}
+        />
+        <StatCard
+          label="Active POS terminals"
+          value={activeTerminals}
+          valueClassName="text-accent"
+          icon={Monitor}
+        />
       </div>
 
       {/* Staff Directory Table Card */}
