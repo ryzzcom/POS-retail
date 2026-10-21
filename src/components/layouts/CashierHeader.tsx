@@ -100,7 +100,7 @@ export function CashierHeader({
           asChild
           className="rounded-full px-3.5 sm:px-5 py-2 font-sans font-medium text-xs sm:text-sm text-dark-primary flex items-center gap-1.5 sm:gap-2 shadow-xs hover:opacity-95"
         >
-          <Link href={`${basePath}/pos`}>
+          <Link href="/pos?from=cashier">
             <ScanLine className="size-4 shrink-0" />
             <span className="hidden xs:inline">Open POS</span>
           </Link>

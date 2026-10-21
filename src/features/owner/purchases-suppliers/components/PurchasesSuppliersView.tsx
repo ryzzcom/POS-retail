@@ -155,13 +155,13 @@ export function PurchasesSuppliersView() {
         prev.map((s) =>
           s.id === matchedSupplier.id
             ? {
-                ...s,
-                openOrdersCount:
-                  values.status === "Ordered" || values.status === "Partial"
-                    ? s.openOrdersCount + 1
-                    : s.openOrdersCount,
-                outstandingBalance: s.outstandingBalance + unpaidAmount,
-              }
+              ...s,
+              openOrdersCount:
+                values.status === "Ordered" || values.status === "Partial"
+                  ? s.openOrdersCount + 1
+                  : s.openOrdersCount,
+              outstandingBalance: s.outstandingBalance + unpaidAmount,
+            }
             : s
         )
       );
@@ -200,9 +200,9 @@ export function PurchasesSuppliersView() {
       prev.map((s) =>
         s.id === values.supplierId
           ? {
-              ...s,
-              outstandingBalance: newBalance,
-            }
+            ...s,
+            outstandingBalance: newBalance,
+          }
           : s
       )
     );
@@ -240,14 +240,14 @@ export function PurchasesSuppliersView() {
       prev.map((p) =>
         p.id === purchaseId
           ? {
-              ...p,
-              status: "Received",
-              receivedItems: p.totalItems,
-              lineItems: p.lineItems.map((li) => ({
-                ...li,
-                receivedQuantity: li.quantity,
-              })),
-            }
+            ...p,
+            status: "Received",
+            receivedItems: p.totalItems,
+            lineItems: p.lineItems.map((li) => ({
+              ...li,
+              receivedQuantity: li.quantity,
+            })),
+          }
           : p
       )
     );

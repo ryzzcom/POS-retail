@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/:storeSlug/counter/:counterId/pos",
+        destination: "/pos?from=cashier",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

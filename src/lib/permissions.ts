@@ -20,8 +20,7 @@ export const OWNER_ROUTES = {
 } as const;
 
 export const CASHIER_ROUTES = {
-  POS: (storeSlug: string, counterId: string) =>
-    "/" + storeSlug + "/counter/" + counterId + "/pos",
+  POS: (_storeSlug?: string, _counterId?: string) => "/pos",
   SHIFT: (storeSlug: string, counterId: string) =>
     "/" + storeSlug + "/counter/" + counterId + "/shift",
   MY_SALES: (storeSlug: string, counterId: string) =>

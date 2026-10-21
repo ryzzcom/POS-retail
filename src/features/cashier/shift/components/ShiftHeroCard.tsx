@@ -75,7 +75,7 @@ export function ShiftHeroCard({
           asChild
           className="rounded-full px-5 py-2.5 font-sans font-medium text-sm flex items-center gap-2 shadow-xs"
         >
-          <Link href={`/${storeSlug}/counter/${counterId}/pos`}>
+          <Link href="/pos?from=cashier">
             <ScanLine className="size-4 shrink-0" />
             <span>Start selling</span>
           </Link>
