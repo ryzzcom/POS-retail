@@ -3,10 +3,11 @@
 import * as React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, RefreshCw, UploadCloud } from "lucide-react";
+import { Plus, Trash2, RefreshCw, UploadCloud, Loader2, X } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { formatPKR } from "@/lib/formatters";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
   productSchema,
   ProductFormValues,
@@ -89,6 +90,32 @@ export function NewProductDialog({
     control,
     name: "variants",
   });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
+
+  const currentImageUrl = watch("imageUrl");
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      setUploadError(null);
+      const url = await uploadToCloudinary(file);
+      setValue("imageUrl", url, { shouldValidate: true, shouldDirty: true });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setUploadError(msg);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   // Re-populate when editing changes
   React.useEffect(() => {
@@ -281,30 +308,87 @@ export function NewProductDialog({
           </div>
         </div>
 
-        {/* Image Upload Box */}
+        {/* Image Upload Box (Cloudinary Direct + URL fallback) */}
         <div className="flex flex-col gap-1.5">
           <label className="font-sans font-medium text-xs sm:text-sm text-heading">
             Product media
           </label>
-          <div className="w-full p-4 rounded-xl border border-dashed border-default bg-page/30 flex items-center gap-4">
-            <div className="size-16 rounded-lg bg-card border border-default flex flex-col items-center justify-center text-muted shrink-0">
-              <UploadCloud className="size-5 mb-0.5" />
-              <span className="text-[10px]">Upload</span>
-            </div>
-            <div className="flex-1 flex items-center gap-2">
+
+          {/* Hidden native file input triggered by button click */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/png,image/jpeg,image/webp,image/jpg"
+            className="hidden"
+          />
+
+          <div className="w-full p-4 rounded-xl border border-dashed border-default bg-page/30 flex flex-col sm:flex-row items-center gap-4">
+            {/* Thumbnail Preview or Upload Trigger Box */}
+            {currentImageUrl ? (
+              <div className="relative size-16 rounded-lg bg-card border border-default overflow-hidden shrink-0 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentImageUrl}
+                  alt="Product preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setValue("imageUrl", "")}
+                  className="absolute inset-0 bg-heading/70 text-dark-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  title="Remove image"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="size-16 rounded-lg bg-card border border-default flex flex-col items-center justify-center text-muted hover:text-heading hover:border-primary transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                title="Browse file to upload"
+              >
+                {isUploading ? (
+                  <Loader2 className="size-5 mb-0.5 animate-spin text-primary" />
+                ) : (
+                  <UploadCloud className="size-5 mb-0.5" />
+                )}
+                <span className="text-[10px]">{isUploading ? "..." : "Upload"}</span>
+              </button>
+            )}
+
+            <div className="flex-1 w-full flex flex-col sm:flex-row items-center gap-2">
               <input
                 type="text"
                 placeholder="...or paste an image URL"
                 className="w-full h-10 px-3 rounded-lg bg-card border border-default font-sans text-xs text-heading focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                {...register("imageUrl")}
               />
               <button
                 type="button"
-                className="h-10 px-4 rounded-lg bg-primary text-dark-primary font-sans font-medium text-xs shrink-0 cursor-pointer"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full sm:w-auto h-10 px-4 rounded-lg bg-primary text-dark-primary font-sans font-medium text-xs shrink-0 cursor-pointer hover:opacity-95 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
               >
-                Add
+                {isUploading ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="size-3.5" />
+                    <span>Browse Image</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
+          {uploadError && (
+            <p className="text-[11px] text-status-error font-sans">{uploadError}</p>
+          )}
         </div>
 
         {/* Colours × sizes matrix generator (Figma Node 3404:28823) */}
