@@ -1,31 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { exportToCsv } from "@/lib/export";
 import {
-  WhatsappTabId,
-  MessageLogItem,
-  CampaignItem,
   TemplateItem,
-  AutomatedMessageRule,
-  ConnectionConsentConfig,
   CreditPack,
-  WhatsAppMetricsSummary,
 } from "../types/whatsapp-campaigns.types";
 import {
-  MOCK_MESSAGE_LOGS,
-  MOCK_CAMPAIGNS,
-  MOCK_TEMPLATES,
-  MOCK_AUTOMATED_RULES,
-  MOCK_CONNECTION_CONFIG,
-  MOCK_METRICS,
   MOCK_USAGE_BREAKDOWN,
   MOCK_CREDIT_PACKS,
 } from "../constants/whatsapp-mock";
-import {
-  NewCouponFormValues,
-  NewCampaignFormValues,
-} from "../schemas/whatsapp-campaigns.schemas";
+import { useWhatsappCampaigns } from "../hooks/useWhatsappCampaigns";
 import { WhatsappHeader } from "./WhatsappHeader";
 import { MessageLogTab } from "./MessageLogTab";
 import { CampaignsTab } from "./CampaignsTab";
@@ -37,195 +21,50 @@ import { NewCouponModal } from "./NewCouponModal";
 import { NewCampaignModal } from "./NewCampaignModal";
 import { TemplateEditorModal } from "./TemplateEditorModal";
 import { TopUpModal } from "./TopUpModal";
+import { Loader2 } from "lucide-react";
 
 export function WhatsappCampaignsView() {
-  const [activeTab, setActiveTab] = React.useState<WhatsappTabId>("log");
-  const [notification, setNotification] = React.useState<string | null>(null);
+  const {
+    activeTab,
+    setActiveTab,
+    logs,
+    campaigns,
+    templates,
+    rules,
+    connectionConfig,
+    metrics,
+    isLoading,
+    error,
+    notification,
+    isCouponModalOpen,
+    setIsCouponModalOpen,
+    isCampaignModalOpen,
+    setIsCampaignModalOpen,
+    isTopUpModalOpen,
+    setIsTopUpModalOpen,
+    selectedTopUpPack,
+    editingTemplate,
+    setEditingTemplate,
+    isTemplateEditorOpen,
+    setIsTemplateEditorOpen,
+    handleRetryMessage,
+    handleExportLogs,
+    handleCreateCoupon,
+    handleLaunchCampaign,
+    handleToggleRule,
+    handleSaveConnection,
+    handleOpenBuyPack,
+    handleConfirmTopUp,
+    handleSaveTemplate,
+  } = useWhatsappCampaigns();
 
-  // Core Data State
-  const [logs, setLogs] = React.useState<MessageLogItem[]>(MOCK_MESSAGE_LOGS);
-  const [campaigns, setCampaigns] = React.useState<CampaignItem[]>(MOCK_CAMPAIGNS);
-  const [templates, setTemplates] = React.useState<TemplateItem[]>(MOCK_TEMPLATES);
-  const [rules, setRules] = React.useState<AutomatedMessageRule[]>(MOCK_AUTOMATED_RULES);
-  const [connectionConfig, setConnectionConfig] = React.useState<ConnectionConsentConfig>(
-    MOCK_CONNECTION_CONFIG
-  );
-  const [metrics, setMetrics] = React.useState<WhatsAppMetricsSummary>(MOCK_METRICS);
-
-  // Modals & Drawers State
-  const [isCouponModalOpen, setIsCouponModalOpen] = React.useState(false);
-  const [isCampaignModalOpen, setIsCampaignModalOpen] = React.useState(false);
-  const [isTopUpModalOpen, setIsTopUpModalOpen] = React.useState(false);
-  const [selectedTopUpPack, setSelectedTopUpPack] = React.useState<CreditPack | null>(null);
-  const [editingTemplate, setEditingTemplate] = React.useState<TemplateItem | null>(null);
-  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = React.useState(false);
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
-  };
-
-  // 1. Retry Message Log Handler
-  const handleRetryMessage = (logId: string) => {
-    setLogs((prev) =>
-      prev.map((item) =>
-        item.id === logId
-          ? {
-              ...item,
-              status: "delivered",
-              updatedAt: "Just now",
-              failureReason: undefined,
-            }
-          : item
-      )
-    );
-    setMetrics((prev) => ({
-      ...prev,
-      failedCount: Math.max(0, prev.failedCount - 1),
-    }));
-    showNotification("Message successfully requeued and delivered to customer.");
-  };
-
-  // 2. Export Logs to CSV
-  const handleExportLogs = () => {
-    const headers = [
-      "Customer Name",
-      "Phone Number",
-      "Receipt / Order Ref",
-      "Template",
-      "Message Preview",
-      "Status",
-      "Category",
-      "Timestamp",
-    ];
-
-    const rows = logs.map((l) => [
-      l.customerName,
-      l.customerPhone,
-      l.receiptRef,
-      l.templateName,
-      l.message,
-      l.status,
-      l.category,
-      l.updatedAt,
-    ]);
-
-    exportToCsv(`whatsapp_message_logs_${Date.now()}`, headers, rows);
-    showNotification("WhatsApp message log successfully exported to CSV.");
-  };
-
-  // 3. New Coupon Submission
-  const handleCreateCoupon = (values: NewCouponFormValues) => {
-    const newCouponCampaign: CampaignItem = {
-      id: `cmp-${Date.now()}`,
-      title: values.couponName,
-      purpose: values.description || "POS Promotional Discount Coupon",
-      couponCode: values.couponCode,
-      discount:
-        values.discountType === "percentage"
-          ? `${values.discountValue}% Off`
-          : `Rs. ${values.discountValue.toLocaleString()} Flat`,
-      validity: `${values.startsDate} – ${values.endDate}`,
-      messagesSent: 0,
-      posRedeemed: 0,
-      status: "Active",
-      audienceSegment: "All Active Customers",
-      templateName: "Promotional Discount & Coupon Offer",
-    };
-
-    setCampaigns((prev) => [newCouponCampaign, ...prev]);
-    showNotification(
-      `Coupon ${values.couponCode} (${values.couponName}) created successfully.`
-    );
-  };
-
-  // 4. New Campaign Launch Submission
-  const handleLaunchCampaign = (values: NewCampaignFormValues) => {
-    const audienceCount =
-      values.audienceSegment === "vip_tier"
-        ? 100
-        : values.audienceSegment === "khata_overdue"
-        ? 42
-        : values.audienceSegment === "inactive_60"
-        ? 210
-        : 450;
-
-    const newCampaign: CampaignItem = {
-      id: `cmp-${Date.now()}`,
-      title: values.title,
-      purpose: values.purpose,
-      couponCode: values.couponCode || "DIRECT",
-      discount: "Promotional",
-      validity: "Today – 30 Days",
-      messagesSent: audienceCount,
-      posRedeemed: 0,
-      status: "Active",
-      audienceSegment: values.audienceSegment,
-      templateName: "Broadcast Campaign",
-    };
-
-    setCampaigns((prev) => [newCampaign, ...prev]);
-    setMetrics((prev) => ({
-      ...prev,
-      availableCredits: Math.max(0, prev.availableCredits - audienceCount),
-    }));
-
-    showNotification(
-      `Campaign "${values.title}" launched! ${audienceCount} WhatsApp messages sent.`
-    );
-  };
-
-  // 5. Toggle Automated Rules
-  const handleToggleRule = (ruleId: string, enabled: boolean) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === ruleId ? { ...r, enabled } : r))
-    );
-    const target = rules.find((r) => r.id === ruleId);
-    showNotification(
-      `Automated rule "${target?.title}" ${enabled ? "activated" : "paused"}.`
-    );
-  };
-
-  // 6. Save Connection Settings
-  const handleSaveConnection = (newConfig: ConnectionConsentConfig) => {
-    setConnectionConfig(newConfig);
-    showNotification("WhatsApp Business Cloud API connection settings saved.");
-  };
-
-  // 7. Buy Credit Pack
-  const handleOpenBuyPack = (pack: CreditPack) => {
-    setSelectedTopUpPack(pack);
-    setIsTopUpModalOpen(true);
-  };
-
-  const handleConfirmTopUp = (pack: CreditPack) => {
-    setMetrics((prev) => ({
-      ...prev,
-      availableCredits: prev.availableCredits + pack.credits,
-      purchasedCredits: prev.purchasedCredits + pack.credits,
-    }));
-    showNotification(
-      `${pack.credits.toLocaleString()} credits added to your WhatsApp pool!`
-    );
-  };
-
-  // 8. Template Edit & Test
   const handleEditTemplate = (template: TemplateItem) => {
     setEditingTemplate(template);
     setIsTemplateEditorOpen(true);
   };
 
-  const handleSaveTemplate = (updated: TemplateItem) => {
-    setTemplates((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
-    );
-    showNotification(`Template "${updated.name}" updated successfully.`);
-  };
-
   const handleSendTestMessage = (template: TemplateItem, phone: string) => {
-    showNotification(`Test message for "${template.name}" sent to ${phone}.`);
+    // Handled visually or through API
   };
 
   // Available Coupons for Campaign Linking
@@ -262,67 +101,78 @@ export function WhatsappCampaignsView() {
         onExportLogs={handleExportLogs}
       />
 
-      {/* 2. Active Tab Content View */}
-      {activeTab === "log" && (
-        <MessageLogTab
-          logs={logs}
-          onRetryMessage={handleRetryMessage}
-          onSelectMessage={(msg) => showNotification(`Message ID: ${msg.receiptRef}`)}
-        />
-      )}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-default">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+          <p className="text-sm font-medium text-body">Loading WhatsApp campaigns & logs...</p>
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-status-error-bg text-status-error rounded-2xl border border-status-error text-center">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      ) : (
+        <>
+          {/* 2. Active Tab Content View */}
+          {activeTab === "log" && (
+            <MessageLogTab
+              logs={logs}
+              onRetryMessage={handleRetryMessage}
+              onSelectMessage={() => {}}
+            />
+          )}
 
-      {activeTab === "campaigns" && (
-        <CampaignsTab
-          campaigns={campaigns}
-          onOpenNewCampaign={() => setIsCampaignModalOpen(true)}
-          onOpenNewCoupon={() => setIsCouponModalOpen(true)}
-          onSelectCampaign={(c) => {
-            setIsCampaignModalOpen(true);
-          }}
-        />
-      )}
+          {activeTab === "campaigns" && (
+            <CampaignsTab
+              campaigns={campaigns}
+              onOpenNewCampaign={() => setIsCampaignModalOpen(true)}
+              onOpenNewCoupon={() => setIsCouponModalOpen(true)}
+              onSelectCampaign={() => {
+                setIsCampaignModalOpen(true);
+              }}
+            />
+          )}
 
-      {activeTab === "templates" && (
-        <TemplatesTab
-          templates={templates}
-          onOpenNewTemplate={() => {
-            setEditingTemplate(templates[0]);
-            setIsTemplateEditorOpen(true);
-          }}
-          onEditTemplate={handleEditTemplate}
-          onTestTemplate={(tpl) => handleSendTestMessage(tpl, "+92 300 4819201")}
-        />
-      )}
+          {activeTab === "templates" && (
+            <TemplatesTab
+              templates={templates}
+              onOpenNewTemplate={() => {
+                setEditingTemplate(templates[0]);
+                setIsTemplateEditorOpen(true);
+              }}
+              onEditTemplate={handleEditTemplate}
+              onTestTemplate={(tpl) => handleSendTestMessage(tpl, "+92 300 4819201")}
+            />
+          )}
 
-      {activeTab === "automated" && (
-        <AutomatedMessagesTab
-          rules={rules}
-          onToggleRule={handleToggleRule}
-          onConfigureRule={(rule) =>
-            showNotification(`Configuration options for "${rule.title}"`)
-          }
-        />
-      )}
+          {activeTab === "automated" && (
+            <AutomatedMessagesTab
+              rules={rules}
+              onToggleRule={handleToggleRule}
+              onConfigureRule={() => {}}
+            />
+          )}
 
-      {activeTab === "connection" && (
-        <ConnectionConsentTab
-          initialConfig={connectionConfig}
-          onSaveConfig={handleSaveConnection}
-          onCancel={() => setActiveTab("log")}
-        />
-      )}
+          {activeTab === "connection" && (
+            <ConnectionConsentTab
+              initialConfig={connectionConfig}
+              onSaveConfig={handleSaveConnection}
+              onCancel={() => setActiveTab("log")}
+            />
+          )}
 
-      {activeTab === "credits" && (
-        <CreditsUsageTab
-          metrics={metrics}
-          breakdown={MOCK_USAGE_BREAKDOWN}
-          creditPacks={MOCK_CREDIT_PACKS}
-          onBuyPack={handleOpenBuyPack}
-        />
+          {activeTab === "credits" && (
+            <CreditsUsageTab
+              metrics={metrics}
+              breakdown={MOCK_USAGE_BREAKDOWN}
+              creditPacks={MOCK_CREDIT_PACKS}
+              onBuyPack={handleOpenBuyPack}
+            />
+          )}
+        </>
       )}
 
       {/* 3. Modals */}
-      {/* A. Create New POS Coupon Modal (Figma Node 3468:52756) */}
+      {/* A. Create New POS Coupon Modal */}
       <NewCouponModal
         open={isCouponModalOpen}
         onClose={() => setIsCouponModalOpen(false)}

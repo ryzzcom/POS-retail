@@ -12,6 +12,7 @@ import { SegmentedFilter } from "@/components/ui/segmented-filter";
 export interface PosProductCatalogProps {
   products: PosProduct[];
   onAddToCart: (product: PosProduct, variant?: ProductVariant) => void;
+  searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -21,6 +22,7 @@ export interface PosProductCatalogProps {
 export function PosProductCatalog({
   products,
   onAddToCart,
+  searchInputRef,
 }: PosProductCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<PosCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +73,19 @@ export function PosProductCatalog({
           onAddToCart(prod, prod.variants[0]);
         }
         setSearchQuery("");
+      } else if (filteredProducts.length > 0) {
+        // Automatically select top filtered match on Enter
+        const prod = filteredProducts[0];
+        if (prod.variants.length > 1) {
+          setVariantModalProduct(prod);
+        } else {
+          onAddToCart(prod, prod.variants[0]);
+        }
+        setSearchQuery("");
       }
+    } else if (e.key === "Escape") {
+      setSearchQuery("");
+      (e.target as HTMLInputElement).blur();
     }
   };
 
@@ -88,10 +102,11 @@ export function PosProductCatalog({
       {/* 1. Barcode Scanner & Search Bar */}
       <div className="w-full">
         <SearchInput
+          ref={searchInputRef}
           value={searchQuery}
           onChange={setSearchQuery}
           onKeyDown={handleBarcodeKeyDown}
-          placeholder="Scan barcode, or type name / design code / SKU and press Enter"
+          placeholder="Scan barcode (F2 or /), or type design code and press Enter"
           className="h-11 sm:h-12 text-xs sm:text-sm pl-11 shadow-xs"
           containerClassName="w-full"
           aria-label="Scan barcode or search products"

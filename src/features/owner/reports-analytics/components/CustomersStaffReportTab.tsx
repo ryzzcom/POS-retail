@@ -19,10 +19,19 @@ import {
   CouponRedemptionRow,
   StaffPerformanceRow,
 } from "../types";
+import { FullCustomerReportData } from "../services/reports-analytics.service";
 import { Download } from "lucide-react";
 
-export function CustomersStaffReportTab() {
-  const summary = MOCK_CUSTOMER_SUMMARY;
+interface CustomersStaffReportTabProps {
+  data?: FullCustomerReportData | null;
+}
+
+export function CustomersStaffReportTab({ data }: CustomersStaffReportTabProps) {
+  const summary = data?.summary || MOCK_CUSTOMER_SUMMARY;
+  const topCustomers = data?.topCustomers?.length ? data.topCustomers : MOCK_TOP_CUSTOMERS;
+  const couponUsage = data?.couponUsage?.length ? data.couponUsage : MOCK_COUPON_USAGE;
+  const couponRedemptions = data?.couponRedemptions?.length ? data.couponRedemptions : MOCK_COUPON_REDEMPTIONS;
+  const staffPerformance = data?.staffPerformance?.length ? data.staffPerformance : MOCK_STAFF_PERFORMANCE;
 
   // 1. Top Customers by Lifetime Spend Columns
   const topCustomerColumns: ColumnDef<TopCustomerRow>[] = [
@@ -217,7 +226,7 @@ export function CustomersStaffReportTab() {
     exportToCsv(
       "top_customers_lifetime_spend",
       ["Customer", "Tier", "Lifetime Spend", "Points", "Last Visit"],
-      MOCK_TOP_CUSTOMERS.map((c) => [c.customer, c.tier, c.lifetimeSpend, c.points, c.lastVisit])
+      topCustomers.map((c) => [c.customer, c.tier, c.lifetimeSpend, c.points, c.lastVisit])
     );
   };
 
@@ -225,7 +234,7 @@ export function CustomersStaffReportTab() {
     exportToCsv(
       "coupon_usage_report",
       ["Code", "Uses Count", "Total Discount Given"],
-      MOCK_COUPON_USAGE.map((c) => [c.code, c.uses, c.totalDiscount])
+      couponUsage.map((c) => [c.code, c.uses, c.totalDiscount])
     );
   };
 
@@ -233,7 +242,7 @@ export function CustomersStaffReportTab() {
     exportToCsv(
       "coupon_redemptions_report",
       ["Customer", "Purchase / Order", "Status", "Benefit Saved"],
-      MOCK_COUPON_REDEMPTIONS.map((r) => [r.customer, r.purchase, r.status, r.boughtAfter])
+      couponRedemptions.map((r) => [r.customer, r.purchase, r.status, r.boughtAfter])
     );
   };
 
@@ -249,7 +258,7 @@ export function CustomersStaffReportTab() {
         "Return Rate",
         "Commission Earned",
       ],
-      MOCK_STAFF_PERFORMANCE.map((s) => [
+      staffPerformance.map((s) => [
         s.staffName,
         s.counter,
         s.shiftCount,
@@ -327,7 +336,7 @@ export function CustomersStaffReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_TOP_CUSTOMERS}
+          data={topCustomers}
           columns={topCustomerColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}
@@ -353,7 +362,7 @@ export function CustomersStaffReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_COUPON_USAGE}
+            data={couponUsage}
             columns={couponUsageColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -377,7 +386,7 @@ export function CustomersStaffReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_COUPON_REDEMPTIONS}
+            data={couponRedemptions}
             columns={couponRedemptionColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -407,7 +416,7 @@ export function CustomersStaffReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_STAFF_PERFORMANCE}
+          data={staffPerformance}
           columns={staffPerformanceColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}

@@ -18,6 +18,7 @@ import {
   ReceivablesAgingRow,
   SupplierPayableRow,
 } from "../types";
+import { FullFinanceReportData } from "../services/reports-analytics.service";
 import { Download } from "lucide-react";
 
 function formatPkrWithSign(val: number): string {
@@ -27,8 +28,16 @@ function formatPkrWithSign(val: number): string {
   return `Rs. ${val.toLocaleString("en-PK")}`;
 }
 
-export function FinanceReportTab() {
-  const summary = MOCK_FINANCE_SUMMARY;
+interface FinanceReportTabProps {
+  data?: FullFinanceReportData | null;
+}
+
+export function FinanceReportTab({ data }: FinanceReportTabProps) {
+  const summary = data?.summary || MOCK_FINANCE_SUMMARY;
+  const expenseCategories = data?.expenseCategories?.length ? data.expenseCategories : MOCK_EXPENSES_BY_CATEGORY;
+  const cashDrawerMovements = data?.cashDrawerMovements?.length ? data.cashDrawerMovements : MOCK_CASH_DRAWER_MOVEMENTS;
+  const receivablesAging = data?.receivablesAging?.length ? data.receivablesAging : MOCK_RECEIVABLES_AGING;
+  const supplierPayables = data?.supplierPayables?.length ? data.supplierPayables : MOCK_SUPPLIER_PAYABLES;
 
   // 1. Expenses by Category Columns
   const expenseCategoryColumns: ColumnDef<ExpenseCategoryRow>[] = [
@@ -184,7 +193,7 @@ export function FinanceReportTab() {
     exportToCsv(
       "expenses_by_category",
       ["Category", "Recorded", "Paid"],
-      MOCK_EXPENSES_BY_CATEGORY.map((e) => [e.category, e.recorded, e.paid])
+      expenseCategories.map((e) => [e.category, e.recorded, e.paid])
     );
   };
 
@@ -192,7 +201,7 @@ export function FinanceReportTab() {
     exportToCsv(
       "cash_drawer_movements",
       ["Time", "Type", "Reference", "Amount"],
-      MOCK_CASH_DRAWER_MOVEMENTS.map((c) => [c.time, c.type, c.reference, c.amount])
+      cashDrawerMovements.map((c) => [c.time, c.type, c.reference, c.amount])
     );
   };
 
@@ -200,7 +209,7 @@ export function FinanceReportTab() {
     exportToCsv(
       "receivables_aging",
       ["Customer", "Total Balance", "Current", "1-30 Days Overdue", "31-60 Days Overdue"],
-      MOCK_RECEIVABLES_AGING.map((r) => [
+      receivablesAging.map((r) => [
         r.customer,
         r.balance,
         r.current,
@@ -214,7 +223,7 @@ export function FinanceReportTab() {
     exportToCsv(
       "supplier_payables",
       ["Supplier", "Balance Owed"],
-      MOCK_SUPPLIER_PAYABLES.map((s) => [s.supplier, s.balance])
+      supplierPayables.map((s) => [s.supplier, s.balance])
     );
   };
 
@@ -286,7 +295,7 @@ export function FinanceReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_EXPENSES_BY_CATEGORY}
+            data={expenseCategories}
             columns={expenseCategoryColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -310,7 +319,7 @@ export function FinanceReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_CASH_DRAWER_MOVEMENTS}
+            data={cashDrawerMovements}
             columns={cashMovementColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -337,7 +346,7 @@ export function FinanceReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_RECEIVABLES_AGING}
+            data={receivablesAging}
             columns={receivablesAgingColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -361,7 +370,7 @@ export function FinanceReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_SUPPLIER_PAYABLES}
+            data={supplierPayables}
             columns={supplierPayableColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}

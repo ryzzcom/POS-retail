@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { storeProfileSchema, StoreProfileSchemaType } from "../schemas";
 import { INITIAL_STORE_PROFILE } from "../constants";
+import { settingsService } from "../services/settings.service";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -42,6 +43,7 @@ const GST_RATE_OPTIONS = [
 
 export function StoreProfileTab() {
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const {
     register,
@@ -55,12 +57,36 @@ export function StoreProfileTab() {
     mode: "onChange",
   });
 
+  // Load live store profile from backend
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadProfile() {
+      try {
+        const res = await settingsService.getAllSettings();
+        if (isMounted && res.storeProfile) {
+          reset(res.storeProfile);
+        }
+      } catch {
+        // Fall back gracefully
+      }
+    }
+    loadProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, [reset]);
+
   const onSubmit = async (data: StoreProfileSchemaType) => {
-    // Simulated clean save
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    reset(data);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    try {
+      setErrorMessage(null);
+      await settingsService.updateStoreProfile(data);
+      reset(data);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update store profile";
+      setErrorMessage(message);
+    }
   };
 
   return (
@@ -71,6 +97,18 @@ export function StoreProfileTab() {
           <CheckCircle2 className="size-5 shrink-0" />
           <p className="font-sans text-xs sm:text-sm font-medium">
             Store profile and localization preferences updated successfully.
+          </p>
+        </div>
+      )}
+
+      {/* Error Notification Alert */}
+      {errorMessage && (
+        <div
+          role="alert"
+          className="flex items-center gap-3 p-4 rounded-[16px] bg-status-error-bg border border-status-error/30 text-status-error"
+        >
+          <p className="font-sans text-xs sm:text-sm font-medium">
+            {errorMessage}
           </p>
         </div>
       )}

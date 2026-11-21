@@ -1,140 +1,48 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { CheckCircle2, Info } from "lucide-react";
-import { exportToCsv } from "@/lib/export";
-import { formatPKR } from "@/lib/formatters";
+import React from "react";
+import { CheckCircle2, Info, Loader2 } from "lucide-react";
 import {
   SaleReceiptDrawer,
   ReturnExchangeDialog,
 } from "@/features/owner/sales-history";
-import { ReceiptSummary } from "@/features/owner/sales-history/types/sales-history.types";
 import { SalesTable, SalesToolbar } from "@/components/common";
 import { MySalesHeader } from "./MySalesHeader";
-import { MOCK_CASHIER_SALES } from "../constants";
 import {
   CashierSaleItem,
   CashierPaymentMethod,
 } from "../types";
 import { ReturnExchangeSchemaType } from "../schemas";
+import { useMySales } from "../hooks/useMySales";
 
 export function MySalesView() {
-  const [salesList, setSalesList] = useState<CashierSaleItem[]>(MOCK_CASHIER_SALES);
-  const [search, setSearch] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<CashierPaymentMethod>("all");
+  const {
+    salesList,
+    filteredSales,
+    paginatedSales,
+    summary,
+    search,
+    selectedMethod,
+    currentPage,
+    pageSize,
+    isLoading,
+    error,
+    notification,
+    selectedReceipt,
+    setSelectedReceipt,
+    isReceiptDrawerOpen,
+    setIsReceiptDrawerOpen,
+    returnDialogState,
+    setReturnDialogState,
+    setCurrentPage,
+    setPageSize,
+    handleSearchChange,
+    handleMethodChange,
+    handleExportCsv,
+    showNotification,
+  } = useMySales();
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // Modals & Drawers State
-  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptSummary | null>(null);
-  const [isReceiptDrawerOpen, setIsReceiptDrawerOpen] = useState(false);
-
-  const [returnDialogState, setReturnDialogState] = useState<{
-    open: boolean;
-    receiptNumber: string;
-    customerName: string;
-    unitPrice: number;
-    maxQty: number;
-  }>({
-    open: false,
-    receiptNumber: "",
-    customerName: "",
-    unitPrice: 4650,
-    maxQty: 1,
-  });
-
-  // Notification Toast
-  const [notification, setNotification] = useState<{
-    type: "success" | "info";
-    message: string;
-  } | null>(null);
-
-  const showNotification = (message: string, type: "success" | "info" = "success") => {
-    setNotification({ type, message });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
-  };
-
-  // 1. Search Change Handler
-  const handleSearchChange = (val: string) => {
-    setSearch(val);
-    setCurrentPage(1);
-  };
-
-  // 2. Method Filter Change Handler
-  const handleMethodChange = (method: CashierPaymentMethod) => {
-    setSelectedMethod(method);
-    setCurrentPage(1);
-  };
-
-  // 3. Filtered Sales List
-  const filteredSales = useMemo(() => {
-    return salesList.filter((item) => {
-      // Method Match
-      const matchesMethod =
-        selectedMethod === "all" || item.paidByMethod === selectedMethod;
-
-      // Search Match
-      const searchLower = search.trim().toLowerCase();
-      const matchesSearch =
-        !searchLower ||
-        item.receiptNumber.toLowerCase().includes(searchLower) ||
-        item.customerName.toLowerCase().includes(searchLower) ||
-        (item.customerPhone && item.customerPhone.includes(searchLower));
-
-      return matchesMethod && matchesSearch;
-    });
-  }, [salesList, selectedMethod, search]);
-
-  // 4. Paginated Sales
-  const paginatedSales = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredSales.slice(start, start + pageSize);
-  }, [filteredSales, currentPage, pageSize]);
-
-  // 5. Dynamic Summary Metrics
-  const summary = useMemo(() => {
-    const receiptsCount = filteredSales.length;
-    const itemsCount = filteredSales.reduce((acc, curr) => acc + curr.itemsCount, 0);
-    const totalSalesPKR = filteredSales.reduce(
-      (acc, curr) => acc + curr.totalAmountPKR,
-      0
-    );
-    return { receiptsCount, itemsCount, totalSalesPKR };
-  }, [filteredSales]);
-
-  // 6. Export to CSV Handler
-  const handleExport = () => {
-    const headers = [
-      "Receipt No",
-      "Time",
-      "Customer",
-      "Phone",
-      "Items Count",
-      "Payment Method",
-      "WhatsApp Status",
-      "Total (PKR)",
-    ];
-
-    const rows = filteredSales.map((s) => [
-      s.receiptNumber,
-      s.time,
-      s.customerName,
-      s.customerPhone || "—",
-      s.itemsCount,
-      s.paidBy,
-      s.whatsappStatus,
-      s.totalAmountPKR,
-    ]);
-
-    exportToCsv("cashier-my-sales-today", headers, rows);
-    showNotification("My sales report exported to CSV successfully.");
-  };
-
-  // 7. Select Sale Row -> Open Slide-Over Thermal Receipt Drawer
+  // 1. Select Sale Row -> Open Slide-Over Thermal Receipt Drawer
   const handleSelectSale = (sale: CashierSaleItem) => {
     setSelectedReceipt({
       id: sale.id,
@@ -152,7 +60,7 @@ export function MySalesView() {
     setIsReceiptDrawerOpen(true);
   };
 
-  // 8. Confirm Return Handler
+  // 2. Confirm Return Handler
   const handleConfirmReturn = (data: ReturnExchangeSchemaType) => {
     showNotification(
       `Return processed for receipt ${data.receiptNumber}. Refund settlement: ${data.settlementMethod.replace("_", " ")}.`
@@ -183,7 +91,7 @@ export function MySalesView() {
         receiptsCount={summary.receiptsCount}
         itemsCount={summary.itemsCount}
         totalSalesPKR={summary.totalSalesPKR}
-        onExport={handleExport}
+        onExport={handleExportCsv}
       />
 
       {/* Toolbar: Search & Payment Method Pills */}
@@ -194,24 +102,35 @@ export function MySalesView() {
         onMethodChange={(method) => handleMethodChange(method as CashierPaymentMethod)}
       />
 
-      {/* Sales DataTable */}
-      <SalesTable<CashierSaleItem>
-        sales={paginatedSales}
-        showCashierColumn={false}
-        onSelectSale={handleSelectSale}
-        pagination={{
-          currentPage,
-          totalPages,
-          totalItems: filteredSales.length,
-          pageSize,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: (newSize) => {
-            setPageSize(newSize);
-            setCurrentPage(1);
-          },
-          itemLabel: "receipts",
-        }}
-      />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-default">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+          <p className="text-sm font-medium text-body">Loading sales history...</p>
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-status-error-bg text-status-error rounded-2xl border border-status-error text-center">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      ) : (
+        /* Sales DataTable */
+        <SalesTable<CashierSaleItem>
+          sales={paginatedSales}
+          showCashierColumn={false}
+          onSelectSale={handleSelectSale}
+          pagination={{
+            currentPage,
+            totalPages,
+            totalItems: filteredSales.length,
+            pageSize,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            },
+            itemLabel: "receipts",
+          }}
+        />
+      )}
 
       {/* Thermal Receipt Slide-Over Drawer */}
       <SaleReceiptDrawer

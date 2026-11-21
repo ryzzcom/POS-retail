@@ -147,3 +147,22 @@ export interface SalesStockCreditFormValues {
   blockNewCreditWhenOverdue: boolean;
   autoSendWhatsAppReminder: boolean;
 }
+
+// ========================================================
+// Unified Settings Data Structure (GET /api/v1/settings)
+// ========================================================
+export interface SettingsData {
+  storeProfile: StoreProfileFormValues;
+  teamPermissions: {
+    staffMembers: StaffMember[];
+    rolePermissions: RolePermissionConfig;
+  };
+  billingSubscription: {
+    plan: BillingPlan;
+    usageMetrics: UsageMetric[];
+    savedPaymentMethods: SavedPaymentMethod[];
+    invoices: BillingInvoice[];
+  };
+  receiptPrinter: ReceiptPrinterFormValues;
+  salesStockCredit: SalesStockCreditFormValues;
+}

@@ -12,3 +12,4 @@ export * from "./OtpView";
 export * from "./OtpForm";
 export * from "./AuthSplitLayout";
 export * from "./GoogleAuthButton";
+export * from "./SelectProfileView";

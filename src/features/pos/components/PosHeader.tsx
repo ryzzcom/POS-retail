@@ -8,6 +8,7 @@ import {
   Printer,
   Receipt,
   Lock,
+  Keyboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ export interface PosHeaderProps {
   cashierName?: string;
   onCloseShift?: () => void;
   onOpenMySales?: () => void;
+  onOpenShortcuts?: () => void;
   onExit?: () => void;
 }
 
@@ -29,6 +31,7 @@ export function PosHeader({
   shiftInfo = "Shift opened 10:02 AM by Bilal Ahmed",
   onCloseShift,
   onOpenMySales,
+  onOpenShortcuts,
   onExit,
 }: PosHeaderProps) {
   const router = useRouter();
@@ -77,6 +80,23 @@ export function PosHeader({
 
       {/* Right Section: My Sales, Scanner Ready, Print Mode, Close Shift */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {onOpenShortcuts && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onOpenShortcuts}
+            className="inline-flex items-center gap-1.5 font-sans text-xs text-body hover:text-heading px-2.5 h-8 rounded-full hover:bg-subtle/50 cursor-pointer"
+            title="Keyboard Shortcuts & Hotkeys (F1 or ?)"
+          >
+            <Keyboard className="size-3.5 text-accent" />
+            <span className="hidden sm:inline">Shortcuts</span>
+            <kbd className="hidden md:inline-flex px-1.5 py-0.5 rounded bg-subtle text-[10px] font-mono text-muted border border-default/60">
+              F1
+            </kbd>
+          </Button>
+        )}
+
         {onOpenMySales && (
           <Button
             type="button"

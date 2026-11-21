@@ -28,11 +28,37 @@ export function PosVariantModal({
   const colors = Array.from(new Set(product.variants.map((v) => v.color)));
   const sizes = Array.from(new Set(product.variants.map((v) => v.size)));
 
+  const inStockVariants = product.variants.filter((v) => v.stock > 0);
+
   const handleCellClick = (variant: ProductVariant) => {
     if (variant.stock <= 0) return;
     onSelectVariant(product, variant);
     onClose();
   };
+
+  // Keyboard shortcut listener for fast variant selection
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Numbers 1-9 to select corresponding variant
+      const digit = parseInt(e.key, 10);
+      if (!isNaN(digit) && digit >= 1 && digit <= inStockVariants.length) {
+        e.preventDefault();
+        handleCellClick(inStockVariants[digit - 1]);
+        return;
+      }
+
+      // Enter selects first in-stock variant
+      if (e.key === "Enter" && inStockVariants.length > 0) {
+        e.preventDefault();
+        handleCellClick(inStockVariants[0]);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, inStockVariants]);
 
   return (
     <Dialog
@@ -86,6 +112,8 @@ export function PosVariantModal({
                     }
 
                     const isOutOfStock = variant.stock <= 0;
+                    const inStockIdx = inStockVariants.findIndex((v) => v.id === variant.id);
+                    const hotkey = inStockIdx >= 0 && inStockIdx < 9 ? inStockIdx + 1 : null;
 
                     return (
                       <td key={size} className="p-2">
@@ -93,12 +121,17 @@ export function PosVariantModal({
                           type="button"
                           disabled={isOutOfStock}
                           onClick={() => handleCellClick(variant)}
-                          className={`w-full h-14 rounded-[12px] border px-3 py-1.5 flex flex-col items-center justify-center transition-all ${
+                          className={`relative w-full h-14 rounded-[12px] border px-3 py-1.5 flex flex-col items-center justify-center transition-all ${
                             isOutOfStock
                               ? "border-default/40 bg-subtle/20 text-muted opacity-60 cursor-not-allowed"
-                              : "border-default bg-card hover:border-primary hover:bg-subtle/30 text-heading cursor-pointer shadow-2xs hover:shadow-xs"
+                              : "border-default bg-card hover:border-primary hover:bg-subtle/30 text-heading cursor-pointer shadow-2xs hover:shadow-xs group"
                           }`}
                         >
+                          {hotkey && (
+                            <span className="absolute top-1 right-1.5 font-mono text-[9px] px-1 py-0.5 rounded bg-subtle text-muted group-hover:text-heading border border-default/40">
+                              {hotkey}
+                            </span>
+                          )}
                           <span className="font-sans text-xs font-medium leading-tight">
                             {isOutOfStock ? "Out of stock" : `${variant.stock} left`}
                           </span>

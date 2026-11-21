@@ -10,6 +10,7 @@ import {
   MOCK_BILLING_INVOICES,
 } from "../constants";
 import { BillingInvoice } from "../types";
+import { settingsService } from "../services/settings.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/data-display/data-table";
@@ -17,16 +18,37 @@ import {
   CreditCard,
   Sparkles,
   Download,
-  Calendar,
   CheckCircle2,
   Building2,
   ArrowUpRight,
-  ShieldCheck,
-  FileText,
 } from "lucide-react";
 
 export function BillingSubscriptionTab() {
-  const plan = MOCK_BILLING_PLAN;
+  const [billingPlan, setBillingPlan] = React.useState(MOCK_BILLING_PLAN);
+  const [usageMetrics, setUsageMetrics] = React.useState(MOCK_USAGE_METRICS);
+  const [paymentMethods, setPaymentMethods] = React.useState(MOCK_PAYMENT_METHODS);
+  const [invoices, setInvoices] = React.useState(MOCK_BILLING_INVOICES);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadBilling() {
+      try {
+        const res = await settingsService.getAllSettings();
+        if (isMounted && res.billingSubscription) {
+          if (res.billingSubscription.plan) setBillingPlan(res.billingSubscription.plan);
+          if (res.billingSubscription.usageMetrics) setUsageMetrics(res.billingSubscription.usageMetrics);
+          if (res.billingSubscription.savedPaymentMethods) setPaymentMethods(res.billingSubscription.savedPaymentMethods);
+          if (res.billingSubscription.invoices) setInvoices(res.billingSubscription.invoices);
+        }
+      } catch {
+        // Fall back gracefully
+      }
+    }
+    loadBilling();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleDownloadInvoice = (inv: BillingInvoice) => {
     exportToCsv(
@@ -116,7 +138,7 @@ export function BillingSubscriptionTab() {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-accent/20 text-accent border border-accent/40 flex items-center gap-1.5">
                 <Sparkles className="size-3" />
-                <span>{plan.name}</span>
+                <span>{billingPlan.name}</span>
               </span>
               <span className="text-xs text-status-success font-medium flex items-center gap-1">
                 <CheckCircle2 className="size-3.5" /> Active & Verified
@@ -125,12 +147,12 @@ export function BillingSubscriptionTab() {
 
             <div>
               <p className="font-heading font-bold text-2xl sm:text-3xl text-heading">
-                {formatPKR(plan.price)}{" "}
+                {formatPKR(billingPlan.price)}{" "}
                 <span className="text-xs font-sans text-body font-normal">/ month</span>
               </p>
               <p className="text-xs text-body font-sans mt-1">
-                Billed annually ({formatPKR(plan.price * 12)} / year). Next billing renewal on{" "}
-                <strong className="text-heading font-medium">{plan.renewalDate}</strong>.
+                Billed annually ({formatPKR(billingPlan.price * 12)} / year). Next billing renewal on{" "}
+                <strong className="text-heading font-medium">{billingPlan.renewalDate}</strong>.
               </p>
             </div>
 
@@ -138,13 +160,13 @@ export function BillingSubscriptionTab() {
               <div className="p-3 rounded-[12px] bg-theme border border-default/50">
                 <p className="text-[11px] text-body">POS Terminals</p>
                 <p className="font-heading font-semibold text-heading text-sm sm:text-base mt-0.5">
-                  {plan.activeRegisters}
+                  {billingPlan.activeRegisters}
                 </p>
               </div>
               <div className="p-3 rounded-[12px] bg-theme border border-default/50">
                 <p className="text-[11px] text-body">WhatsApp Quota</p>
                 <p className="font-heading font-semibold text-heading text-sm sm:text-base mt-0.5">
-                  {plan.whatsappCredits}
+                  {billingPlan.whatsappCredits}
                 </p>
               </div>
             </div>
@@ -171,7 +193,7 @@ export function BillingSubscriptionTab() {
           </div>
 
           <div className="space-y-4 pt-1">
-            {MOCK_USAGE_METRICS.map((metric) => (
+            {usageMetrics.map((metric) => (
               <div key={metric.id} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-heading">{metric.label}</span>
@@ -218,7 +240,7 @@ export function BillingSubscriptionTab() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {MOCK_PAYMENT_METHODS.map((pm) => (
+          {paymentMethods.map((pm) => (
             <div
               key={pm.id}
               className={`p-4 rounded-[14px] border flex items-center justify-between gap-4 ${
@@ -270,7 +292,7 @@ export function BillingSubscriptionTab() {
         </div>
 
         <DataTable
-          data={MOCK_BILLING_INVOICES}
+          data={invoices}
           columns={invoiceColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}

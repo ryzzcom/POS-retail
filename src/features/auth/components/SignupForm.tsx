@@ -51,10 +51,11 @@ export function SignupForm() {
     try {
       setSubmissionError(null);
       await authService.signup(data);
-      // Navigate to dashboard or activation screen
-      router.push("/dashboard");
-    } catch {
-      setSubmissionError("Unable to create account. Please try again.");
+      // Navigate to verification OTP screen
+      router.push("/verify-otp");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unable to create account. Please try again.";
+      setSubmissionError(message);
     }
   };
 

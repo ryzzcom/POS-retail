@@ -2,21 +2,22 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ScanLine, LogOut, Menu } from "lucide-react";
+import { ScanLine, Users, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/features/auth";
 
 export interface OwnerHeaderProps {
   /**
-   * Display date string. Defaults to "Sunday, 11 October 2026" or current date.
+   * Display date string. Defaults to formatted current date.
    */
   date?: string;
   /**
-   * Active store owner's name. Defaults to "Ayesha Khan".
+   * Active store owner's name.
    */
   userName?: string;
   /**
-   * User role description. Defaults to "Store Owner".
+   * User role description.
    */
   userRole?: string;
   /**
@@ -24,7 +25,7 @@ export interface OwnerHeaderProps {
    */
   posHref?: string;
   /**
-   * Logout destination or handler.
+   * Optional custom profile switch or logout handler.
    */
   onLogout?: () => void;
   /**
@@ -39,7 +40,7 @@ export interface OwnerHeaderProps {
 }
 
 export function OwnerHeader({
-  date = "Sunday, 11 October 2026",
+  date,
   userName = "Ayesha Khan",
   userRole = "Store Owner",
   posHref = "/pos?from=owner",
@@ -48,7 +49,32 @@ export function OwnerHeader({
   onToggleMobileMenu,
   className,
 }: OwnerHeaderProps) {
+  const { user, activeProfile, activeRole } = useAuth();
   const handleMobileMenuClick = onOpenMobileMenu || onToggleMobileMenu;
+
+  // Format dynamic today's date if date prop not explicitly supplied
+  const todayFormatted = React.useMemo(() => {
+    if (date) return date;
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date());
+    } catch {
+      return "Sunday, 11 October 2026";
+    }
+  }, [date]);
+
+  // Read active profile / user context
+  const effectiveName = activeProfile?.displayName || user?.fullName || userName;
+  const effectiveRole =
+    activeRole === "OWNER"
+      ? "Store Owner"
+      : activeRole === "CASHIER"
+      ? "Cashier"
+      : userRole;
 
   return (
     <header
@@ -72,10 +98,10 @@ export function OwnerHeader({
         )}
 
         <time
-          dateTime="2026-10-11"
+          dateTime={new Date().toISOString().split("T")[0]}
           className="font-sans text-xs sm:text-sm lg:text-base text-body tracking-normal truncate"
         >
-          {date}
+          {todayFormatted}
         </time>
       </div>
 
@@ -96,36 +122,36 @@ export function OwnerHeader({
           </Button>
         </Link>
 
-        {/* User Identity & Logout Button */}
+        {/* User Identity & Switch Profile Button */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex flex-col items-end text-right">
             <span className="font-sans font-medium text-xs sm:text-sm text-heading leading-tight truncate max-w-[85px] sm:max-w-none">
-              {userName}
+              {effectiveName}
             </span>
             <span className="hidden sm:block font-sans text-xs text-body leading-tight">
-              {userRole}
+              {effectiveRole}
             </span>
           </div>
 
-          {/* Square Outline Logout Button */}
+          {/* Switch Profile / Staff Selection Button */}
           {onLogout ? (
             <button
               type="button"
               onClick={onLogout}
               className="size-8 sm:size-[30px] rounded-[6px] border border-default bg-theme flex items-center justify-center text-body hover:text-heading hover:bg-subtle/50 transition-colors cursor-pointer shrink-0"
-              aria-label="Log out of owner account"
-              title="Log out"
+              aria-label="Switch staff profile"
+              title="Switch Staff Profile"
             >
-              <LogOut className="size-3.5 sm:size-4 shrink-0" aria-hidden="true" />
+              <Users className="size-3.5 sm:size-4 shrink-0" aria-hidden="true" />
             </button>
           ) : (
             <Link
-              href="/login"
+              href="/select-profile"
               className="size-8 sm:size-[30px] rounded-[6px] border border-default bg-theme flex items-center justify-center text-body hover:text-heading hover:bg-subtle/50 transition-colors cursor-pointer shrink-0"
-              aria-label="Log out of owner account"
-              title="Log out"
+              aria-label="Switch staff profile"
+              title="Switch Staff Profile"
             >
-              <LogOut className="size-3.5 sm:size-4 shrink-0" aria-hidden="true" />
+              <Users className="size-3.5 sm:size-4 shrink-0" aria-hidden="true" />
             </Link>
           )}
         </div>

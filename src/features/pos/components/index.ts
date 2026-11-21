@@ -10,3 +10,4 @@ export * from "./PosLoyaltyRedemption";
 export * from "./PosHeldBillsModal";
 export * from "./PosCheckoutModal";
 export * from "./PosSaleCompletedModal";
+export * from "./PosShortcutsGuideModal";

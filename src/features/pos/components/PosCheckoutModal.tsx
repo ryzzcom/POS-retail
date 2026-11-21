@@ -112,9 +112,9 @@ export function PosCheckoutModal({
     setTenders((prev) => prev.filter((t) => t.id !== tenderId));
   };
 
-  const handleComplete = () => {
+  const handleComplete = React.useCallback(() => {
     if (tenders.length === 0) {
-      // Auto-apply single cash tender of full amount if none added yet
+      // Auto-apply single tender of full amount if none added yet
       const defaultTender: PosTender = {
         id: `tender-${Date.now()}`,
         method: activeMethod,
@@ -125,7 +125,45 @@ export function PosCheckoutModal({
     } else {
       onConfirmSale(tenders);
     }
-  };
+  }, [tenders, activeMethod, grandTotal, cashTenderedInput, onConfirmSale]);
+
+  // Global Keyboard Shortcuts for Checkout: 1-5 to switch tender, Enter to finalize sale
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      const isInput = targetTag === "input" || targetTag === "textarea";
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleComplete();
+        return;
+      }
+
+      if (!isInput) {
+        if (e.key === "1") {
+          e.preventDefault();
+          setActiveMethod("cash");
+        } else if (e.key === "2") {
+          e.preventDefault();
+          setActiveMethod("card");
+        } else if (e.key === "3") {
+          e.preventDefault();
+          setActiveMethod("bank_transfer");
+        } else if (e.key === "4") {
+          e.preventDefault();
+          setActiveMethod("jazzcash_easypaisa");
+        } else if (e.key === "5") {
+          e.preventDefault();
+          setActiveMethod("khata");
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, handleComplete]);
 
   // Khata eligibility check
   const availableKhataLimit = customer
@@ -145,7 +183,7 @@ export function PosCheckoutModal({
         <div className="md:col-span-7 flex flex-col gap-4">
           {/* Method Selector Pills */}
           <div className="bg-card border border-default p-1 rounded-full flex items-center gap-1 overflow-x-auto no-scrollbar shadow-xs">
-            {TENDER_METHODS.map((m) => {
+            {TENDER_METHODS.map((m, idx) => {
               const isActive = activeMethod === m.id;
               return (
                 <button
@@ -164,6 +202,9 @@ export function PosCheckoutModal({
                 >
                   <m.icon className="size-3.5" />
                   <span>{m.label}</span>
+                  <kbd className="hidden sm:inline-flex text-[9px] font-mono px-1.5 py-0.2 rounded bg-subtle/60 text-inherit border border-default/40">
+                    {idx + 1}
+                  </kbd>
                 </button>
               );
             })}
@@ -392,9 +433,12 @@ export function PosCheckoutModal({
             size="lg"
             onClick={handleComplete}
             disabled={tenders.length > 0 && remaining > 0}
-            className="w-full rounded-full h-12 text-sm font-sans font-medium shadow-xs"
+            className="w-full rounded-full h-12 text-sm font-sans font-medium shadow-xs flex items-center justify-between px-6"
           >
-            Complete Sale
+            <span>Complete Sale</span>
+            <kbd className="px-2 py-0.5 rounded bg-dark-primary/20 text-dark-primary text-[11px] font-mono font-medium">
+              Enter
+            </kbd>
           </Button>
         </div>
       </div>

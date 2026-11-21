@@ -13,12 +13,33 @@ import {
 import { PRODUCTS_INVENTORY_MOCK_DATA } from "../constants/products-inventory-mock";
 import { ProductFormValues, AdjustStockFormValues } from "../schemas/products-inventory.schemas";
 import { exportToCsv } from "@/lib/export";
+import { productsInventoryService } from "../services/products-inventory.service";
 
 export function useProductsInventory() {
   // Master products list state
   const [products, setProducts] = React.useState<ProductItem[]>(
     PRODUCTS_INVENTORY_MOCK_DATA
   );
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+
+  // Fetch live products on mount
+  const loadProducts = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await productsInventoryService.getProducts();
+      if (res.items && res.items.length > 0) {
+        setProducts(res.items);
+      }
+    } catch (err) {
+      console.warn("Failed to load products from API, using fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   // Tabs
   const [activeTab, setActiveTab] = React.useState<InventoryTab>("catalog");
@@ -243,21 +264,34 @@ export function useProductsInventory() {
   };
 
   // Handler: Archive product
-  const handleArchiveProduct = (product: ProductItem) => {
+  const handleArchiveProduct = async (product: ProductItem) => {
+    const nextStatus = product.status === "archived" ? "active" : "archived";
     setProducts((prev) =>
-      prev.map((p) =>
-        p.id === product.id
-          ? {
-              ...p,
-              status: p.status === "archived" ? "active" : "archived",
-            }
-          : p
-      )
+      prev.map((p) => (p.id === product.id ? { ...p, status: nextStatus } : p))
     );
+    try {
+      await productsInventoryService.archiveProduct(product.id, nextStatus === "archived");
+    } catch (err) {
+      console.warn("Archive error:", err);
+    }
   };
 
   // Handler: Adjust stock
-  const handleConfirmStockAdjustment = (values: AdjustStockFormValues) => {
+  const handleConfirmStockAdjustment = async (values: AdjustStockFormValues) => {
+    let delta = values.quantity;
+    if (values.adjustmentType === "subtract") delta = -values.quantity;
+
+    try {
+      await productsInventoryService.adjustStock({
+        variantId: values.variantId,
+        delta: values.adjustmentType !== "set" ? delta : undefined,
+        newQuantity: values.adjustmentType === "set" ? values.quantity : undefined,
+        reason: values.reason,
+      });
+    } catch (err) {
+      console.warn("Stock adjustment API warning:", err);
+    }
+
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id === values.productId) {
@@ -321,6 +355,8 @@ export function useProductsInventory() {
     allProductsCount: products.length,
     filteredTotalCount: filteredProducts.length,
     summary,
+    isLoading,
+    refresh: loadProducts,
 
     // Active tab
     activeTab,

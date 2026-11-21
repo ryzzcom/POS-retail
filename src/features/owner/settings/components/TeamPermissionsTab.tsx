@@ -3,6 +3,7 @@
 import * as React from "react";
 import { StaffMember, StaffRole } from "../types";
 import { MOCK_STAFF_MEMBERS, INITIAL_ROLE_PERMISSIONS } from "../constants";
+import { settingsService } from "../services/settings.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
@@ -49,6 +50,25 @@ export function TeamPermissionsTab() {
   const [permissions, setPermissions] = React.useState(INITIAL_ROLE_PERMISSIONS);
   const [permSuccess, setPermSuccess] = React.useState(false);
 
+  // Hydrate staff list from live backend API
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadStaff() {
+      try {
+        const staff = await settingsService.getStaff();
+        if (isMounted && Array.isArray(staff) && staff.length > 0) {
+          setStaffList(staff);
+        }
+      } catch {
+        // Fallback to initial mock staff if unauthenticated
+      }
+    }
+    loadStaff();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // KPI calculations
   const totalStaff = staffList.length;
   const activeCashiers = staffList.filter(
@@ -73,38 +93,77 @@ export function TeamPermissionsTab() {
   }, [staffList, searchQuery, roleFilter]);
 
   const handleSaveStaff = (member: StaffMember) => {
+    const updatedMember = {
+      ...member,
+      pinSet: member.pinSet !== undefined ? member.pinSet : true,
+    };
     setStaffList((prev) => {
-      const exists = prev.some((s) => s.id === member.id);
+      const exists = prev.some((s) => s.id === updatedMember.id);
+      let nextList: StaffMember[];
       if (exists) {
-        return prev.map((s) => (s.id === member.id ? member : s));
+        nextList = prev.map((s) => (s.id === updatedMember.id ? { ...s, ...updatedMember } : s));
+      } else {
+        nextList = [updatedMember, ...prev];
       }
-      return [member, ...prev];
+
+      // Sync active staff into store_profiles for instant /select-profile parity
+      if (typeof window !== "undefined") {
+        try {
+          const profiles = nextList
+            .filter((s) => s.status === "active")
+            .map((s) => ({
+              id: s.id,
+              displayName: s.name,
+              role: (s.role.toUpperCase() === "OWNER" ? "OWNER" : "CASHIER") as "OWNER" | "CASHIER",
+              isPinSet: s.pinSet,
+              maxDiscountPct: s.maxDiscountPercent,
+              assignedCounterId: s.assignedTerminal,
+            }));
+          localStorage.setItem("store_profiles", JSON.stringify(profiles));
+        } catch {
+          // Local storage sync error ignored
+        }
+      }
+
+      return nextList;
     });
   };
 
-  const handleToggleStatus = (id: string) => {
-    setStaffList((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          return {
-            ...s,
-            status: s.status === "active" ? "suspended" : "active",
-          };
-        }
-        return s;
-      })
-    );
+  const handleToggleStatus = async (id: string) => {
+    const target = staffList.find((s) => s.id === id);
+    if (!target) return;
+    const nextStatus = target.status === "active" ? "suspended" : "active";
+    try {
+      await settingsService.updateStaffMember(id, { status: nextStatus });
+      setStaffList((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status: nextStatus } : s))
+      );
+    } catch {
+      // Revert or show alert on failure
+    }
   };
 
-  const handleDeleteStaff = () => {
+  const handleDeleteStaff = async () => {
     if (!deletingMember) return;
-    setStaffList((prev) => prev.filter((s) => s.id !== deletingMember.id));
-    setDeletingMember(null);
+    try {
+      await settingsService.deleteStaffMember(deletingMember.id);
+      setStaffList((prev) => prev.filter((s) => s.id !== deletingMember.id));
+      setDeletingMember(null);
+    } catch {
+      // Keep state if delete fails
+    }
   };
 
-  const handleSavePermissions = () => {
-    setPermSuccess(true);
-    setTimeout(() => setPermSuccess(false), 3000);
+  const handleSavePermissions = async () => {
+    try {
+      await settingsService.updateSalesStockCreditRules({
+        maxDiscountWithoutManagerPin: permissions.maxCashierDiscountPercent,
+      });
+      setPermSuccess(true);
+      setTimeout(() => setPermSuccess(false), 3000);
+    } catch {
+      setPermSuccess(false);
+    }
   };
 
   // Staff Table Column Definitions

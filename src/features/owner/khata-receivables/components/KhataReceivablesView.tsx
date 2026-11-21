@@ -1,11 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { exportToCsv } from "@/lib/export";
-import { formatPKR } from "@/lib/formatters";
-import { KhataAccount, KhataFilterOption, KhataAgingSummary } from "../types/khata.types";
-import { MOCK_KHATA_ACCOUNTS } from "../constants/khata-mock";
-import { RecordKhataPaymentFormValues } from "../schemas/khata.schemas";
+import { useKhataReceivables } from "../hooks/useKhataReceivables";
+import type { KhataAccount, KhataFilterOption } from "../types/khata.types";
 import { KhataHeader } from "./KhataHeader";
 import { KhataAgingCard } from "./KhataAgingCard";
 import { KhataAccountsTable, KhataToolbar } from "@/components/common";
@@ -15,236 +12,61 @@ import { WhatsAppReminderDialog } from "./WhatsAppReminderDialog";
 import { AdjustCreditLimitDialog } from "./AdjustCreditLimitDialog";
 
 export function KhataReceivablesView() {
-  const [accounts, setAccounts] = React.useState<KhataAccount[]>(MOCK_KHATA_ACCOUNTS);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<KhataFilterOption>("all");
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
-  const [notification, setNotification] = React.useState<string | null>(null);
+  const {
+    accounts,
+    allAccounts,
+    filteredAccounts,
+    summary,
+    filterCounts,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    selectedAccount,
+    setSelectedAccount,
+    isDetailDrawerOpen,
+    setIsDetailDrawerOpen,
+    paymentAccount,
+    setPaymentAccount,
+    isPaymentDialogOpen,
+    setIsPaymentDialogOpen,
+    whatsAppAccount,
+    setWhatsAppAccount,
+    isWhatsAppDialogOpen,
+    setIsWhatsAppDialogOpen,
+    adjustLimitAccount,
+    setAdjustLimitAccount,
+    isAdjustLimitDialogOpen,
+    setIsAdjustLimitDialogOpen,
+    notification,
+    handleRecordPayment,
+    handleAdjustCreditLimit,
+    handleSendWhatsAppReminder,
+    handleExportCSV,
+  } = useKhataReceivables();
 
-  // Modals & Drawer State
-  const [selectedAccount, setSelectedAccount] = React.useState<KhataAccount | null>(null);
-  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
-
-  const [paymentAccount, setPaymentAccount] = React.useState<KhataAccount | null>(null);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = React.useState(false);
-
-  const [whatsAppAccount, setWhatsAppAccount] = React.useState<KhataAccount | null>(null);
-  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = React.useState(false);
-
-  const [adjustLimitAccount, setAdjustLimitAccount] = React.useState<KhataAccount | null>(null);
-  const [isAdjustLimitDialogOpen, setIsAdjustLimitDialogOpen] = React.useState(false);
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
-  };
-
-  // Dynamic Aging Metrics
-  const summary: KhataAgingSummary = React.useMemo(() => {
-    let totalReceivable = 0;
-    let totalOverdue = 0;
-    let withinTermsAmount = 0;
-    let overdue1to30Amount = 0;
-    let overdue31PlusAmount = 0;
-    let overdueAccountsCount = 0;
-
-    accounts.forEach((acc) => {
-      totalReceivable += acc.balance;
-      if (acc.status === "overdue") {
-        totalOverdue += acc.balance;
-        overdueAccountsCount += 1;
-        if (acc.oldestOpenDays <= 30) {
-          overdue1to30Amount += acc.balance;
-        } else {
-          overdue31PlusAmount += acc.balance;
-        }
-      } else if (acc.status === "within_terms") {
-        withinTermsAmount += acc.balance;
-      }
-    });
-
-    return {
-      totalReceivable,
-      totalOverdue,
-      withinTermsAmount,
-      overdue1to30Amount,
-      overdue31PlusAmount,
-      totalAccountsCount: accounts.length,
-      overdueAccountsCount,
-    };
-  }, [accounts]);
-
-  // Counts for filter pills
-  const counts = React.useMemo(() => {
-    return {
-      all: accounts.length,
-      overdue: accounts.filter((a) => a.status === "overdue").length,
-      within_terms: accounts.filter((a) => a.status === "within_terms").length,
-      settled: accounts.filter((a) => a.status === "settled").length,
-    };
-  }, [accounts]);
-
-  // Filtered Accounts
-  const filteredAccounts = React.useMemo(() => {
-    return accounts.filter((acc) => {
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        q === "" ||
-        acc.customerName.toLowerCase().includes(q) ||
-        acc.customerPhone.includes(q);
-
-      const matchesStatus =
-        statusFilter === "all" || acc.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [accounts, searchQuery, statusFilter]);
-
-  // Reset page to 1 on filter or search changes
-  React.useEffect(() => {
-    setPage(1);
-  }, [searchQuery, statusFilter]);
-
-  // Paginated Rows
-  const paginatedAccounts = React.useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredAccounts.slice(start, start + pageSize);
-  }, [filteredAccounts, page, pageSize]);
-
-  // Handler: Export CSV
-  const handleExportCSV = () => {
-    const headers = [
-      "Customer Name",
-      "Phone Number",
-      "Status",
-      "Oldest Open Date",
-      "Days Open",
-      "Credit Limit (PKR)",
-      "Outstanding Balance (PKR)",
-      "Limit Used %",
-      "Last Payment Date",
-    ];
-
-    const rows = filteredAccounts.map((a) => [
-      a.customerName,
-      a.customerPhone,
-      a.status,
-      a.oldestOpenDate,
-      a.oldestOpenDays,
-      a.creditLimit,
-      a.balance,
-      `${a.limitUsedPercent}%`,
-      a.lastPaymentDate || "N/A",
-    ]);
-
-    exportToCsv(`khata_receivables_${Date.now()}`, headers, rows);
-    showNotification("Khata accounts directory exported to CSV successfully.");
-  };
-
-  // Handler: Open Drawer
   const handleSelectAccount = (account: KhataAccount) => {
     setSelectedAccount(account);
     setIsDetailDrawerOpen(true);
   };
 
-  // Handler: Open Record Payment Modal
   const handleOpenRecordPayment = (account?: KhataAccount) => {
-    setPaymentAccount(account || null);
+    setPaymentAccount(account || allAccounts[0] || null);
     setIsPaymentDialogOpen(true);
   };
 
-  // Handler: Confirm Record Payment
-  const handleConfirmPayment = (values: RecordKhataPaymentFormValues) => {
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === values.accountId) {
-          const newBalance = Math.max(0, acc.balance - values.amount);
-          const newStatus = newBalance === 0 ? "settled" : acc.status;
-          const newPercent = Math.round((newBalance / (acc.creditLimit || 1)) * 100);
-
-          const newEntry = {
-            id: `led-${Date.now()}`,
-            accountId: acc.id,
-            type: "payment_received" as const,
-            date: values.paymentDate,
-            amount: values.amount,
-            balanceAfter: newBalance,
-            receiptNo: values.reference || `CR-${Math.floor(1000 + Math.random() * 9000)}`,
-            description: `Payment received via ${values.paymentMethod}`,
-            paymentMethod: values.paymentMethod,
-          };
-
-          const updatedAccount: KhataAccount = {
-            ...acc,
-            balance: newBalance,
-            status: newStatus,
-            limitUsedPercent: newPercent,
-            lastPaymentDate: values.paymentDate,
-            oldestOpenDate: newBalance === 0 ? "No open dues" : acc.oldestOpenDate,
-            oldestOpenDays: newBalance === 0 ? 0 : acc.oldestOpenDays,
-            ledgerEntries: [newEntry, ...(acc.ledgerEntries || [])],
-          };
-
-          // Also update selectedAccount if drawer is open
-          if (selectedAccount?.id === acc.id) {
-            setSelectedAccount(updatedAccount);
-          }
-
-          return updatedAccount;
-        }
-        return acc;
-      })
-    );
-
-    const target = accounts.find((a) => a.id === values.accountId);
-    showNotification(
-      `Payment of ${formatPKR(values.amount)} recorded for ${
-        target?.customerName || "customer"
-      }.`
-    );
-  };
-
-  // Handler: Open WhatsApp Reminder Dialog
   const handleOpenWhatsAppReminder = (account: KhataAccount) => {
     setWhatsAppAccount(account);
     setIsWhatsAppDialogOpen(true);
   };
 
-  // Handler: Open Adjust Limit Dialog
   const handleOpenAdjustLimit = (account: KhataAccount) => {
     setAdjustLimitAccount(account);
     setIsAdjustLimitDialogOpen(true);
-  };
-
-  // Handler: Confirm Limit Adjustment
-  const handleConfirmAdjustLimit = (accountId: string, newLimit: number) => {
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === accountId) {
-          const newPercent = Math.round((acc.balance / (newLimit || 1)) * 100);
-          const updated: KhataAccount = {
-            ...acc,
-            creditLimit: newLimit,
-            limitUsedPercent: newPercent,
-          };
-          if (selectedAccount?.id === acc.id) {
-            setSelectedAccount(updated);
-          }
-          return updated;
-        }
-        return acc;
-      })
-    );
-
-    const target = accounts.find((a) => a.id === accountId);
-    showNotification(
-      `Credit limit updated to ${formatPKR(newLimit)} for ${
-        target?.customerName || "customer"
-      }.`
-    );
   };
 
   return (
@@ -272,13 +94,13 @@ export function KhataReceivablesView() {
         onSearchChange={setSearchQuery}
         statusFilter={statusFilter}
         onStatusFilterChange={(val) => setStatusFilter(val as KhataFilterOption)}
-        counts={counts}
+        counts={filterCounts}
       />
 
       {/* 4. Khata Accounts & Ledger Table (Figma Node 3456:49411) */}
       <KhataAccountsTable
         role="owner"
-        accounts={paginatedAccounts}
+        accounts={accounts}
         currentPage={page}
         pageSize={pageSize}
         totalItems={filteredAccounts.length}
@@ -311,8 +133,14 @@ export function KhataReceivablesView() {
           setPaymentAccount(null);
         }}
         account={paymentAccount}
-        accounts={accounts}
-        onConfirmPayment={handleConfirmPayment}
+        accounts={allAccounts}
+        onConfirmPayment={(values) =>
+          handleRecordPayment({
+            amount: values.amount,
+            paymentMethod: values.paymentMethod,
+            notes: values.notes,
+          })
+        }
       />
 
       {/* 7. WhatsApp Payment Reminder Modal Dialog */}
@@ -323,9 +151,7 @@ export function KhataReceivablesView() {
           setWhatsAppAccount(null);
         }}
         account={whatsAppAccount}
-        onSendSuccess={(acc) => {
-          showNotification(`WhatsApp reminder opened for ${acc.customerName}.`);
-        }}
+        onSendSuccess={(acc) => handleSendWhatsAppReminder(acc)}
       />
 
       {/* 8. Adjust Credit Limit Modal Dialog */}
@@ -336,7 +162,9 @@ export function KhataReceivablesView() {
           setAdjustLimitAccount(null);
         }}
         account={adjustLimitAccount}
-        onConfirmAdjust={handleConfirmAdjustLimit}
+        onConfirmAdjust={(accId, newLimit) =>
+          handleAdjustCreditLimit({ newLimit })
+        }
       />
     </div>
   );

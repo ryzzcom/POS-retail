@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DASHBOARD_MOCK_DATA } from "../constants/dashboard-mock";
+import { useDashboard } from "../hooks/useDashboard";
 import { DashboardGreeting } from "./DashboardGreeting";
 import { RevenueHeroCard } from "./RevenueHeroCard";
 import { FinancialMetricsStrip } from "./FinancialMetricsStrip";
@@ -9,7 +9,7 @@ import { AttentionAlertsCard } from "./AttentionAlertsCard";
 import { TopSellingVariantsCard } from "./TopSellingVariantsCard";
 
 export function DashboardView() {
-  const data = DASHBOARD_MOCK_DATA;
+  const { data, activeFilter, handleFilterChange } = useDashboard();
 
   return (
     <div className="w-full flex flex-col gap-6 lg:gap-8 pb-6 animate-in fade-in-50 duration-200">
@@ -17,6 +17,8 @@ export function DashboardView() {
       <DashboardGreeting
         ownerName={data.ownerName}
         subtitle={data.greetingSubtitle}
+        activeFilter={activeFilter}
+        onFilterChange={handleFilterChange}
       />
 
       {/* 2. Primary Revenue & Profit Hero Card (Figma Node 3382:11962) */}

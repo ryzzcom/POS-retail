@@ -30,11 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (ignore all .env files except .env.example)
+# env files (strictly ignore all .env files)
 .env
 .env.*
 .env*.local
-!.env.example
+.env.example
 
 # vercel
 .vercel
@@ -52,3 +52,8 @@ AGENT.md
 agent.md
 CLAUDE.md
 GEMINI.md
+
+# Documents & PDFs (Local only)
+*.pdf
+**/*.pdf
+public/images/*.pdf

@@ -20,10 +20,20 @@ import {
   BestSellingVariantRow,
   ReportTransactionRow,
 } from "../types";
+import { FullSalesReportData } from "../services/reports-analytics.service";
 import { Download } from "lucide-react";
 
-export function SalesReportTab() {
-  const summary = MOCK_SALES_SUMMARY;
+interface SalesReportTabProps {
+  data?: FullSalesReportData | null;
+}
+
+export function SalesReportTab({ data }: SalesReportTabProps) {
+  const summary = data?.summary || MOCK_SALES_SUMMARY;
+  const dailySales = data?.dailySales?.length ? data.dailySales : MOCK_DAILY_SALES;
+  const paymentMethods = data?.paymentMethods?.length ? data.paymentMethods : MOCK_PAYMENT_METHODS;
+  const cashierSales = data?.cashierSales?.length ? data.cashierSales : MOCK_CASHIER_SALES;
+  const bestSellingVariants = data?.bestSellingVariants?.length ? data.bestSellingVariants : MOCK_BEST_SELLING_VARIANTS;
+  const transactions = data?.transactions?.length ? data.transactions : MOCK_TRANSACTIONS;
 
   // 1. Daily Sales Columns
   const dailySalesColumns: ColumnDef<DailySalesRow>[] = [
@@ -231,7 +241,7 @@ export function SalesReportTab() {
     exportToCsv(
       "daily_sales_report",
       ["Date", "Orders", "Net Sales", "Gross Profit"],
-      MOCK_DAILY_SALES.map((d) => [d.date, d.orders, d.netSales, d.grossProfit])
+      dailySales.map((d) => [d.date, d.orders, d.netSales, d.grossProfit])
     );
   };
 
@@ -239,7 +249,7 @@ export function SalesReportTab() {
     exportToCsv(
       "payment_methods_report",
       ["Method", "Amount", "Share %"],
-      MOCK_PAYMENT_METHODS.map((p) => [p.method, p.amount, `${p.share}%`])
+      paymentMethods.map((p) => [p.method, p.amount, `${p.share}%`])
     );
   };
 
@@ -247,7 +257,7 @@ export function SalesReportTab() {
     exportToCsv(
       "cashier_sales_report",
       ["Cashier", "Orders", "Discounts", "Net Sales", "AOV"],
-      MOCK_CASHIER_SALES.map((c) => [c.cashier, c.orders, c.discounts, c.netSales, c.aov])
+      cashierSales.map((c) => [c.cashier, c.orders, c.discounts, c.netSales, c.aov])
     );
   };
 
@@ -255,7 +265,7 @@ export function SalesReportTab() {
     exportToCsv(
       "best_selling_variants",
       ["Variant", "SKU", "Quantity", "Revenue", "Margin %"],
-      MOCK_BEST_SELLING_VARIANTS.map((v) => [v.variant, v.sku, v.qty, v.revenue, `${v.margin}%`])
+      bestSellingVariants.map((v) => [v.variant, v.sku, v.qty, v.revenue, `${v.margin}%`])
     );
   };
 
@@ -263,7 +273,7 @@ export function SalesReportTab() {
     exportToCsv(
       "sales_transactions",
       ["Receipt No", "Time", "Cashier", "Customer", "Total"],
-      MOCK_TRANSACTIONS.map((t) => [t.receiptNo, t.time, t.cashier, t.customer, t.total])
+      transactions.map((t) => [t.receiptNo, t.time, t.cashier, t.customer, t.total])
     );
   };
 
@@ -341,7 +351,7 @@ export function SalesReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_DAILY_SALES}
+            data={dailySales}
             columns={dailySalesColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -365,7 +375,7 @@ export function SalesReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_PAYMENT_METHODS}
+            data={paymentMethods}
             columns={paymentMethodColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -390,7 +400,7 @@ export function SalesReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_CASHIER_SALES}
+          data={cashierSales}
           columns={cashierSalesColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}
@@ -414,7 +424,7 @@ export function SalesReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_BEST_SELLING_VARIANTS}
+          data={bestSellingVariants}
           columns={variantColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}
@@ -438,14 +448,14 @@ export function SalesReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_TRANSACTIONS}
+          data={transactions}
           columns={transactionColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}
         />
         {/* Footer Summary Strip */}
         <div className="flex items-center justify-between p-4 sm:p-5 pt-2 border-t border-default/40 text-xs text-body">
-          <span>{MOCK_TRANSACTIONS.length} sales</span>
+          <span>{transactions.length} sales</span>
           <span className="font-heading font-semibold text-heading text-sm">
             {formatPKR(summary.netSales)}
           </span>

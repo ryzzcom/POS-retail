@@ -46,7 +46,7 @@ export function PosCartItemRow({
       <div className="flex items-start gap-3 min-w-0">
         {/* Product Thumbnail with Image Fallback */}
         <div className="relative size-14 rounded-[12px] overflow-hidden bg-subtle/30 shrink-0 border border-default/30">
-          {!imgError ? (
+          {!imgError && Boolean(item.image) ? (
             <Image
               src={item.image}
               alt={item.productName}
@@ -54,6 +54,7 @@ export function PosCartItemRow({
               sizes="56px"
               className="object-cover"
               onError={() => setImgError(true)}
+              unoptimized
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-subtle/50 text-accent">

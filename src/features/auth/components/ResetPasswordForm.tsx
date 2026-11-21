@@ -48,8 +48,9 @@ export function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/login?reset=success");
       }, 1500);
-    } catch {
-      setSubmissionError("Unable to reset password. Please try again or request a new code.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unable to reset password. Please try again or request a new code.";
+      setSubmissionError(message);
     }
   };
 

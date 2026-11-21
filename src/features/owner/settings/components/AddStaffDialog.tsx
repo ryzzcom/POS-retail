@@ -5,11 +5,12 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { staffMemberSchema, StaffMemberSchemaType } from "../schemas";
 import { StaffMember } from "../types";
+import { settingsService } from "../services/settings.service";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Shield, KeyRound, Monitor } from "lucide-react";
+import { UserPlus, KeyRound } from "lucide-react";
 
 interface AddStaffDialogProps {
   open: boolean;
@@ -38,6 +39,8 @@ export function AddStaffDialog({
   onSave,
   editingMember,
 }: AddStaffDialogProps) {
+  const [serverError, setServerError] = React.useState<string | null>(null);
+
   const {
     register,
     control,
@@ -58,6 +61,7 @@ export function AddStaffDialog({
   });
 
   React.useEffect(() => {
+    setServerError(null);
     if (editingMember) {
       reset({
         name: editingMember.name,
@@ -82,21 +86,43 @@ export function AddStaffDialog({
   }, [editingMember, reset, open]);
 
   const onSubmit = async (data: StaffMemberSchemaType) => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    const newMember: StaffMember = {
-      id: editingMember ? editingMember.id : `staff-${Date.now()}`,
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      role: data.role,
-      assignedTerminal: data.assignedTerminal,
-      pinSet: true,
-      lastActive: editingMember ? editingMember.lastActive : "Just added",
-      status: editingMember ? editingMember.status : "active",
-      maxDiscountPercent: data.maxDiscountPercent,
-    };
-    onSave(newMember);
-    onClose();
+    try {
+      setServerError(null);
+      let saved: StaffMember;
+
+      if (editingMember) {
+        saved = await settingsService.updateStaffMember(editingMember.id, {
+          name: data.name,
+          phone: data.phone,
+          email: data.email || undefined,
+          role: data.role,
+          pin: data.pin || undefined,
+          maxDiscountPercent: data.maxDiscountPercent,
+          assignedTerminal: data.assignedTerminal,
+        });
+      } else {
+        saved = await settingsService.createStaffMember({
+          name: data.name,
+          phone: data.phone,
+          email: data.email || "",
+          role: data.role,
+          pin: data.pin,
+          maxDiscountPercent: data.maxDiscountPercent,
+          assignedTerminal: data.assignedTerminal,
+        });
+      }
+
+      onSave({
+        ...saved,
+        phone: saved.phone || data.phone,
+        assignedTerminal: saved.assignedTerminal || data.assignedTerminal,
+        pinSet: true,
+      });
+      onClose();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save staff member. Please try again.";
+      setServerError(message);
+    }
   };
 
   return (
@@ -113,7 +139,7 @@ export function AddStaffDialog({
       maxWidthClass="w-full sm:max-w-[560px]"
       footer={
         <div className="flex items-center justify-end gap-3 w-full">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
@@ -128,6 +154,15 @@ export function AddStaffDialog({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-1">
+        {serverError && (
+          <div
+            role="alert"
+            className="rounded-[12px] bg-status-error-bg border border-status-error/30 p-2.5 text-xs text-status-error"
+          >
+            {serverError}
+          </div>
+        )}
+
         <Input
           label="Full Name"
           placeholder="e.g. Amina Bilal"

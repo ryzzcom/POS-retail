@@ -1,140 +1,41 @@
 "use client";
 
 import * as React from "react";
-import { CUSTOMER_MOCK_DATA } from "../constants/customers-mock";
-import {
-  CustomerItem,
-  CustomerFilterOption,
-  CustomerSortOption,
-} from "../types/customers.types";
+import { useCustomers } from "../hooks/useCustomers";
+import type { CustomerItem } from "../types/customers.types";
 import { CustomersHeader } from "./CustomersHeader";
 import { CustomersToolbar } from "./CustomersToolbar";
 import { CustomersTable } from "./CustomersTable";
 import { CustomerDetailDrawer } from "./CustomerDetailDrawer";
 import { NewCustomerDialog } from "./NewCustomerDialog";
-import { exportToCsv } from "@/lib/export";
 
 export function CustomersView() {
-  const [customers, setCustomers] =
-    React.useState<CustomerItem[]>(CUSTOMER_MOCK_DATA);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [tierFilter, setTierFilter] =
-    React.useState<CustomerFilterOption>("all");
-  const [sortBy, setSortBy] =
-    React.useState<CustomerSortOption>("highest_spend");
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
-
-  // Drawer & Dialog State
-  const [selectedCustomer, setSelectedCustomer] =
-    React.useState<CustomerItem | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const [isNewCustomerOpen, setIsNewCustomerOpen] = React.useState(false);
-  const [notification, setNotification] = React.useState<string | null>(null);
-
-  // Dynamic Metrics for Header
-  const totalProfiles = customers.length;
-  const acceptsPromotions = customers.filter(
-    (c) => c.acceptsMarketing
-  ).length;
-
-  // Filter and Sort Customers
-  const filteredCustomers = React.useMemo(() => {
-    let list = customers.filter((customer) => {
-      // 1. Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchesName = customer.name.toLowerCase().includes(q);
-        const matchesPhone = customer.phone.toLowerCase().includes(q);
-        const matchesTag = customer.tag?.toLowerCase().includes(q);
-        const matchesEmail = customer.email?.toLowerCase().includes(q);
-        if (!matchesName && !matchesPhone && !matchesTag && !matchesEmail) {
-          return false;
-        }
-      }
-
-      // 2. Tier / Segment Filter
-      if (tierFilter === "gold" && customer.tier !== "Gold") return false;
-      if (tierFilter === "silver" && customer.tier !== "Silver") return false;
-      if (tierFilter === "regular" && customer.tier !== "Regular") return false;
-      if (tierFilter === "with_khata" && customer.khataBalance <= 0) return false;
-      if (tierFilter === "marketing" && !customer.acceptsMarketing) return false;
-
-      return true;
-    });
-
-    // 3. Sorting
-    list = [...list].sort((a, b) => {
-      switch (sortBy) {
-        case "highest_spend":
-          return b.lifetimeSpend - a.lifetimeSpend;
-        case "lowest_spend":
-          return a.lifetimeSpend - b.lifetimeSpend;
-        case "most_points":
-          return b.points - a.points;
-        case "name_asc":
-          return a.name.localeCompare(b.name);
-        case "recent_visit":
-        default:
-          return 0;
-      }
-    });
-
-    return list;
-  }, [customers, searchQuery, tierFilter, sortBy]);
-
-  // Reset to page 1 on filter/search change
-  React.useEffect(() => {
-    setPage(1);
-  }, [searchQuery, tierFilter, sortBy]);
-
-  // Paginated Rows
-  const paginatedCustomers = React.useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredCustomers.slice(start, start + pageSize);
-  }, [filteredCustomers, page, pageSize]);
-
-  // Export to CSV
-  const handleExport = () => {
-    const headers = [
-      "Customer Name",
-      "Phone",
-      "Tag",
-      "Tier",
-      "Lifetime Spend (PKR)",
-      "Points",
-      "Khata Balance (PKR)",
-      "Last Visit",
-      "Messaging",
-    ];
-
-    const rows = filteredCustomers.map((c) => [
-      c.name,
-      c.phone,
-      c.tag || "",
-      c.tier,
-      c.lifetimeSpend,
-      c.points,
-      c.khataBalance,
-      c.lastVisit,
-      c.messaging,
-    ]);
-
-    exportToCsv(`customers_directory_${Date.now()}`, headers, rows);
-    showNotification("Customer directory exported to CSV successfully.");
-  };
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => {
-      setNotification(null);
-    }, 3500);
-  };
-
-  const handleSaveCustomer = (newCustomer: CustomerItem) => {
-    setCustomers((prev) => [newCustomer, ...prev]);
-    showNotification(`Customer "${newCustomer.name}" created successfully.`);
-  };
+  const {
+    filteredCustomers,
+    paginatedCustomers,
+    totalProfiles,
+    acceptsPromotions,
+    searchQuery,
+    setSearchQuery,
+    tierFilter,
+    setTierFilter,
+    sortBy,
+    setSortBy,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    selectedCustomer,
+    setSelectedCustomer,
+    isDetailOpen,
+    setIsDetailOpen,
+    isNewCustomerOpen,
+    setIsNewCustomerOpen,
+    notification,
+    handleSaveCustomer,
+    handleUpdateCustomer,
+    handleExport,
+  } = useCustomers();
 
   const handleSelectCustomer = (customer: CustomerItem) => {
     setSelectedCustomer(customer);
@@ -142,24 +43,10 @@ export function CustomersView() {
   };
 
   const handleRecordKhataPayment = (customer: CustomerItem) => {
-    setCustomers((prev) =>
-      prev.map((c) =>
-        c.id === customer.id ? { ...c, khataBalance: 0 } : c
-      )
-    );
+    handleUpdateCustomer({ ...customer, khataBalance: 0 });
     if (selectedCustomer && selectedCustomer.id === customer.id) {
       setSelectedCustomer({ ...selectedCustomer, khataBalance: 0 });
     }
-    showNotification(
-      `Khata payment recorded for ${customer.name}. Balance cleared.`
-    );
-  };
-
-  const handleUpdateCustomer = (updated: CustomerItem) => {
-    setCustomers((prev) =>
-      prev.map((c) => (c.id === updated.id ? updated : c))
-    );
-    setSelectedCustomer(updated);
   };
 
   return (

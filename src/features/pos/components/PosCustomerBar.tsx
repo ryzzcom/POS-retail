@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { UserPlus, X, Search } from "lucide-react";
 import { PosCustomer } from "../types";
 import { MOCK_POS_CUSTOMERS } from "../constants";
+import { posService } from "../services";
 import { NewCustomerDialog } from "@/features/owner/customers/components/NewCustomerDialog";
 import { CustomerItem } from "@/features/owner/customers/types/customers.types";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ export interface PosCustomerBarProps {
   customer: PosCustomer | null;
   onAttachCustomer: (customer: PosCustomer) => void;
   onDetachCustomer: () => void;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -23,13 +25,45 @@ export function PosCustomerBar({
   customer,
   onAttachCustomer,
   onDetachCustomer,
+  inputRef,
 }: PosCustomerBarProps) {
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [liveCustomers, setLiveCustomers] = useState<PosCustomer[]>(MOCK_POS_CUSTOMERS);
+
+  // Debounced Live Customer Search
+  React.useEffect(() => {
+    if (!search.trim()) {
+      setLiveCustomers(MOCK_POS_CUSTOMERS);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await posService.searchCustomers(search);
+        if (results && results.length > 0) {
+          setLiveCustomers(results);
+        } else {
+          setLiveCustomers([]);
+        }
+      } catch {
+        // Fallback to local filter
+        const q = search.trim().toLowerCase();
+        setLiveCustomers(
+          MOCK_POS_CUSTOMERS.filter(
+            (c) => c.name.toLowerCase().includes(q) || c.phone.includes(q)
+          )
+        );
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Filter customers matching input
-  const filteredCustomers = MOCK_POS_CUSTOMERS.filter((c) => {
+  const filteredCustomers = liveCustomers.filter((c) => {
     const q = search.trim().toLowerCase();
     return !q || c.name.toLowerCase().includes(q) || c.phone.includes(q);
   });
@@ -96,19 +130,41 @@ export function PosCustomerBar({
     );
   }
 
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isSearching || filteredCustomers.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev + 1) % filteredCustomers.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev - 1 + filteredCustomers.length) % filteredCustomers.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filteredCustomers[highlightedIndex]) {
+        handleSelect(filteredCustomers[highlightedIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setIsSearching(false);
+    }
+  };
+
   return (
     <div className="relative w-full select-none">
       <div className="flex items-center gap-2 px-3 py-2 rounded-[14px] bg-card border border-default shadow-xs focus-within:border-focus transition-colors">
         <Search className="size-4 text-muted shrink-0" />
         <input
+          ref={inputRef}
           type="text"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setIsSearching(true);
+            setHighlightedIndex(0);
           }}
+          onKeyDown={handleInputKeyDown}
           onFocus={() => setIsSearching(true)}
-          placeholder="Receipt no., customer or phone"
+          placeholder="Customer phone or name (F3)..."
           className="w-full bg-transparent font-sans text-xs sm:text-sm text-heading placeholder:text-muted focus:outline-none"
         />
 
@@ -129,12 +185,14 @@ export function PosCustomerBar({
         <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-card rounded-[14px] border border-default shadow-lg overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
           {filteredCustomers.length > 0 ? (
             <div className="py-1 divide-y divide-default/20">
-              {filteredCustomers.map((c) => (
+              {filteredCustomers.map((c, idx) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => handleSelect(c)}
-                  className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-subtle/40 transition-colors cursor-pointer"
+                  className={`w-full px-3 py-2 flex items-center justify-between text-left transition-colors cursor-pointer ${
+                    highlightedIndex === idx ? "bg-subtle/80" : "hover:bg-subtle/40"
+                  }`}
                 >
                   <div className="flex flex-col">
                     <span className="font-sans text-xs sm:text-sm font-medium text-heading">

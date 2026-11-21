@@ -31,7 +31,7 @@ export function PosProductCard({
     >
       {/* Product Image */}
       <div className="relative w-full aspect-[4/3] rounded-[14px] overflow-hidden bg-subtle/40">
-        {!imgError ? (
+        {!imgError && Boolean(product.image) ? (
           <Image
             src={product.image}
             alt={product.name}
@@ -39,6 +39,7 @@ export function PosProductCard({
             sizes="(max-width: 768px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             onError={() => setImgError(true)}
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-subtle/50 text-body gap-1.5 p-3">
@@ -47,7 +48,7 @@ export function PosProductCard({
               {product.name}
             </span>
             <span className="text-[10px] text-body uppercase tracking-wider">
-              {product.fabric}
+              {product.fabric || "Boutique"}
             </span>
           </div>
         )}
@@ -77,18 +78,18 @@ export function PosProductCard({
       <div className="flex items-center justify-between gap-1 text-body">
         {/* Swatches */}
         <div className="flex items-center gap-1 shrink-0">
-          {product.colorSwatches.map((colorClass, idx) => (
+          {(Array.isArray(product.colorSwatches) ? product.colorSwatches : []).map((colorClass, idx) => (
             <span
               key={idx}
-              className={`size-2.5 sm:size-3 rounded-full border border-card shadow-xs ${colorClass}`}
-              title={product.colorNames[idx] || "Color"}
+              className={`size-2.5 sm:size-3 rounded-full border border-card shadow-xs ${typeof colorClass === "string" ? colorClass : "bg-primary"}`}
+              title={(Array.isArray(product.colorNames) && product.colorNames[idx]) || "Color"}
             />
           ))}
         </div>
 
         {/* Sizes */}
         <span className="font-sans text-[11px] sm:text-xs text-body truncate">
-          {product.availableSizes.join(" · ")}
+          {Array.isArray(product.availableSizes) ? product.availableSizes.join(" · ") : ""}
         </span>
       </div>
 

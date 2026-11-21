@@ -41,11 +41,32 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     try {
       setSubmissionError(null);
-      await authService.login(data);
-      // Seamlessly navigate to dashboard upon successful validation
-      router.push("/dashboard");
-    } catch {
-      setSubmissionError("Invalid email or password. Please try again.");
+      const res = await authService.login(data);
+
+      if (typeof window !== "undefined") {
+        if (res.token) {
+          localStorage.setItem("auth_token", res.token);
+        }
+        if (res.store) {
+          localStorage.setItem("active_store", JSON.stringify(res.store));
+        }
+        if (res.profiles) {
+          localStorage.setItem("store_profiles", JSON.stringify(res.profiles));
+        }
+      }
+
+      // Seamlessly navigate to staff profile selection upon successful authentication
+      router.push("/select-profile");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (err.message.includes("EMAIL_NOT_VERIFIED")) {
+          setSubmissionError("Your email has not been verified yet. Please check your inbox for the OTP verification code.");
+        } else {
+          setSubmissionError(err.message || "Invalid email or password. Please try again.");
+        }
+      } else {
+        setSubmissionError("Invalid email or password. Please try again.");
+      }
     }
   };
 

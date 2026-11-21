@@ -12,6 +12,8 @@ export interface OtpInputProps {
   error?: string;
   className?: string;
   id?: string;
+  onComplete?: (code: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
@@ -25,17 +27,33 @@ export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
       error,
       className,
       id,
+      onComplete,
+      onKeyDown: onKeyDownProp,
     },
     ref
   ) => {
     const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+    const isFirstMountRef = React.useRef(true);
+    const prevValueRef = React.useRef(value);
 
-    // Focus first input on mount if autoFocus
+    // Initial mount autofocus (ONLY ONCE)
     React.useEffect(() => {
-      if (autoFocus && inputRefs.current[0] && !disabled) {
-        inputRefs.current[0].focus();
+      if (isFirstMountRef.current) {
+        isFirstMountRef.current = false;
+        if (autoFocus && inputRefs.current[0] && !disabled) {
+          inputRefs.current[0].focus();
+        }
       }
     }, [autoFocus, disabled]);
+
+    // When value is explicitly reset back to empty (e.g. on incorrect PIN retry),
+    // focus the first box ready for re-entry!
+    React.useEffect(() => {
+      if (prevValueRef.current !== "" && value === "" && inputRefs.current[0] && !disabled) {
+        inputRefs.current[0].focus();
+      }
+      prevValueRef.current = value;
+    }, [value, disabled]);
 
     // Ensure array of values matches length
     const digits = React.useMemo(() => {
@@ -54,20 +72,24 @@ export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
         // Handled via backspace or cleared
         const nextDigits = [...digits];
         nextDigits[index] = "";
-        onChange(nextDigits.join(""));
+        const nextValue = nextDigits.join("");
+        onChange(nextValue);
         return;
       }
 
-      // If user typed a single character or multiple
+      // If user typed a single character or multiple (last character takes priority)
       const lastChar = cleanVal.slice(-1);
       const nextDigits = [...digits];
       nextDigits[index] = lastChar;
       const nextValue = nextDigits.join("");
       onChange(nextValue);
 
-      // Advance focus to next input
-      if (index < length - 1) {
+      if (nextValue.length === length) {
+        onComplete?.(nextValue);
+      } else if (index < length - 1) {
+        // Advance focus to next input smoothly
         inputRefs.current[index + 1]?.focus();
+        inputRefs.current[index + 1]?.select();
       }
     };
 
@@ -75,6 +97,8 @@ export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
       e: React.KeyboardEvent<HTMLInputElement>,
       index: number
     ) => {
+      onKeyDownProp?.(e);
+
       if (e.key === "Backspace") {
         if (!digits[index] && index > 0) {
           // If current is empty, move back and clear previous
@@ -87,9 +111,11 @@ export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
       } else if (e.key === "ArrowLeft" && index > 0) {
         e.preventDefault();
         inputRefs.current[index - 1]?.focus();
+        inputRefs.current[index - 1]?.select();
       } else if (e.key === "ArrowRight" && index < length - 1) {
         e.preventDefault();
         inputRefs.current[index + 1]?.focus();
+        inputRefs.current[index + 1]?.select();
       }
     };
 
@@ -100,7 +126,10 @@ export const OtpInput = React.forwardRef<HTMLDivElement, OtpInputProps>(
 
       if (numericDigits.length > 0) {
         onChange(numericDigits);
-        const targetIndex = Math.min(numericDigits.length, length) - 1;
+        if (numericDigits.length === length) {
+          onComplete?.(numericDigits);
+        }
+        const targetIndex = Math.min(numericDigits.length, length - 1);
         inputRefs.current[targetIndex]?.focus();
       }
     };

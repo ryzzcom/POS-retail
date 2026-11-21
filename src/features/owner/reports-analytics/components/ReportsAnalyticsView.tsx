@@ -6,34 +6,27 @@ import { SalesReportTab } from "./SalesReportTab";
 import { InventoryReportTab } from "./InventoryReportTab";
 import { FinanceReportTab } from "./FinanceReportTab";
 import { CustomersStaffReportTab } from "./CustomersStaffReportTab";
-import { DatePreset, ReportTab } from "../types";
 import { exportToCsv } from "@/lib/export";
-import {
-  MOCK_SALES_SUMMARY,
-  MOCK_INVENTORY_SUMMARY,
-  MOCK_FINANCE_SUMMARY,
-  MOCK_CUSTOMER_SUMMARY,
-} from "../constants";
+import { useReportsAnalytics } from "../hooks/useReportsAnalytics";
+import { Loader2 } from "lucide-react";
 
 export function ReportsAnalyticsView() {
-  const [activeTab, setActiveTab] = React.useState<ReportTab>("sales");
-  const [preset, setPreset] = React.useState<DatePreset>("thismonth");
-  const [startDate, setStartDate] = React.useState("2026-10-01");
-  const [endDate, setEndDate] = React.useState("2026-10-11");
-
-  const handlePresetChange = (newPreset: DatePreset) => {
-    setPreset(newPreset);
-    if (newPreset === "today") {
-      setStartDate("2026-10-11");
-      setEndDate("2026-10-11");
-    } else if (newPreset === "last7days") {
-      setStartDate("2026-10-05");
-      setEndDate("2026-10-11");
-    } else if (newPreset === "thismonth") {
-      setStartDate("2026-10-01");
-      setEndDate("2026-10-11");
-    }
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    preset,
+    startDate,
+    endDate,
+    setStartDate,
+    setEndDate,
+    handlePresetChange,
+    salesData,
+    inventoryData,
+    financeData,
+    customersData,
+    isLoading,
+    error,
+  } = useReportsAnalytics();
 
   const handlePrint = () => {
     if (typeof window !== "undefined") {
@@ -43,64 +36,68 @@ export function ReportsAnalyticsView() {
 
   const handleExportAll = () => {
     if (activeTab === "sales") {
+      const summary = salesData?.summary;
       exportToCsv(
         `sales_report_${startDate}_to_${endDate}`,
         ["Metric", "Value"],
         [
-          ["Gross Sales", MOCK_SALES_SUMMARY.grossSales],
-          ["Discounts & Points", MOCK_SALES_SUMMARY.discountsAndPoints],
-          ["Net Sales", MOCK_SALES_SUMMARY.netSales],
-          ["COGS", MOCK_SALES_SUMMARY.cogs],
-          ["Gross Profit", MOCK_SALES_SUMMARY.grossProfit],
-          ["Gross Profit Margin", `${MOCK_SALES_SUMMARY.grossProfitMargin}%`],
-          ["Orders Count", MOCK_SALES_SUMMARY.ordersCount],
-          ["Average Order Value", MOCK_SALES_SUMMARY.aov],
+          ["Gross Sales", summary?.grossSales ?? 0],
+          ["Discounts & Points", summary?.discountsAndPoints ?? 0],
+          ["Net Sales", summary?.netSales ?? 0],
+          ["COGS", summary?.cogs ?? 0],
+          ["Gross Profit", summary?.grossProfit ?? 0],
+          ["Gross Profit Margin", `${summary?.grossProfitMargin ?? 0}%`],
+          ["Orders Count", summary?.ordersCount ?? 0],
+          ["Average Order Value", summary?.aov ?? 0],
         ]
       );
     } else if (activeTab === "inventory") {
+      const summary = inventoryData?.summary;
       exportToCsv(
         `inventory_report_${startDate}_to_${endDate}`,
         ["Metric", "Value"],
         [
-          ["Units On Hand", MOCK_INVENTORY_SUMMARY.unitsOnHand],
-          ["Stock At Cost", MOCK_INVENTORY_SUMMARY.stockAtCost],
-          ["Stock At Retail", MOCK_INVENTORY_SUMMARY.stockAtRetail],
-          ["Low Stock Count", MOCK_INVENTORY_SUMMARY.lowStockCount],
-          ["Dead Stock Count", MOCK_INVENTORY_SUMMARY.deadStockCount],
+          ["Units On Hand", summary?.unitsOnHand ?? 0],
+          ["Stock At Cost", summary?.stockAtCost ?? 0],
+          ["Stock At Retail", summary?.stockAtRetail ?? 0],
+          ["Low Stock Count", summary?.lowStockCount ?? 0],
+          ["Dead Stock Count", summary?.deadStockCount ?? 0],
         ]
       );
     } else if (activeTab === "finance") {
+      const summary = financeData?.summary;
       exportToCsv(
         `finance_pl_report_${startDate}_to_${endDate}`,
         ["Metric", "Value"],
         [
-          ["Net Sales", MOCK_FINANCE_SUMMARY.netSales],
-          ["Gross Profit", MOCK_FINANCE_SUMMARY.grossProfit],
-          ["Operating Expenses", MOCK_FINANCE_SUMMARY.operatingExpenses],
-          ["Est Operating Profit", MOCK_FINANCE_SUMMARY.estOperatingProfit],
-          ["Customers Owe You", MOCK_FINANCE_SUMMARY.customersOweYou],
-          ["You Owe Suppliers", MOCK_FINANCE_SUMMARY.youOweSuppliers],
+          ["Net Sales", summary?.netSales ?? 0],
+          ["Gross Profit", summary?.grossProfit ?? 0],
+          ["Operating Expenses", summary?.operatingExpenses ?? 0],
+          ["Est Operating Profit", summary?.estOperatingProfit ?? 0],
+          ["Customers Owe You", summary?.customersOweYou ?? 0],
+          ["You Owe Suppliers", summary?.youOweSuppliers ?? 0],
         ]
       );
     } else {
+      const summary = customersData?.summary;
       exportToCsv(
         `customer_staff_report_${startDate}_to_${endDate}`,
         ["Metric", "Value"],
         [
-          ["Customers Who Bought", MOCK_CUSTOMER_SUMMARY.customersWhoBought],
-          ["New Profiles", MOCK_CUSTOMER_SUMMARY.newProfiles],
-          ["Repeat Rate", `${MOCK_CUSTOMER_SUMMARY.repeatRate}%`],
-          ["Points Issued", MOCK_CUSTOMER_SUMMARY.pointsIssued],
-          ["Points Redeemed", MOCK_CUSTOMER_SUMMARY.pointsRedeemed],
-          ["Referral Conversion", MOCK_CUSTOMER_SUMMARY.referralConversion],
-          ["Wishlist to Purchase Rate", `${MOCK_CUSTOMER_SUMMARY.wishlistToPurchaseRate}%`],
+          ["Customers Who Bought", summary?.customersWhoBought ?? 0],
+          ["New Profiles", summary?.newProfiles ?? 0],
+          ["Repeat Rate", `${summary?.repeatRate ?? 0}%`],
+          ["Points Issued", summary?.pointsIssued ?? 0],
+          ["Points Redeemed", summary?.pointsRedeemed ?? 0],
+          ["Referral Conversion", summary?.referralConversion ?? "0/0"],
+          ["Wishlist to Purchase Rate", `${summary?.wishlistToPurchaseRate ?? 0}%`],
         ]
       );
     }
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 select-none">
       {/* Header with Title, Controls Toolbar, and UnderlineTabs */}
       <ReportsAnalyticsHeader
         activeTab={activeTab}
@@ -111,21 +108,32 @@ export function ReportsAnalyticsView() {
         endDate={endDate}
         onStartDateChange={(val) => {
           setStartDate(val);
-          setPreset("custom");
         }}
         onEndDateChange={(val) => {
           setEndDate(val);
-          setPreset("custom");
         }}
         onPrint={handlePrint}
         onExportCsv={handleExportAll}
       />
 
-      {/* Active Tab View */}
-      {activeTab === "sales" && <SalesReportTab />}
-      {activeTab === "inventory" && <InventoryReportTab />}
-      {activeTab === "finance" && <FinanceReportTab />}
-      {activeTab === "customers" && <CustomersStaffReportTab />}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-2xl border border-default">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+          <p className="text-sm font-medium text-body">Loading analytics & report data...</p>
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-status-error-bg text-status-error rounded-2xl border border-status-error text-center">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      ) : (
+        <>
+          {/* Active Tab View */}
+          {activeTab === "sales" && <SalesReportTab data={salesData} />}
+          {activeTab === "inventory" && <InventoryReportTab data={inventoryData} />}
+          {activeTab === "finance" && <FinanceReportTab data={financeData} />}
+          {activeTab === "customers" && <CustomersStaffReportTab data={customersData} />}
+        </>
+      )}
     </div>
   );
 }

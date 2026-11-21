@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { receiptPrinterSchema, ReceiptPrinterSchemaType } from "../schemas";
 import { INITIAL_RECEIPT_PRINTER_SETTINGS } from "../constants";
+import { settingsService } from "../services/settings.service";
 import { PaperSize } from "../types";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -30,6 +31,7 @@ const PAPER_SIZE_OPTIONS: SegmentedFilterOption[] = [
 export function ReceiptPrinterTab() {
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [testPrintSuccess, setTestPrintSuccess] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const {
     register,
@@ -44,13 +46,38 @@ export function ReceiptPrinterTab() {
     mode: "onChange",
   });
 
+  // Load live receipt printer settings from backend
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadReceiptSettings() {
+      try {
+        const res = await settingsService.getAllSettings();
+        if (isMounted && res.receiptPrinter) {
+          reset(res.receiptPrinter);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+    loadReceiptSettings();
+    return () => {
+      isMounted = false;
+    };
+  }, [reset]);
+
   const formValues = watch();
 
   const onSubmit = async (data: ReceiptPrinterSchemaType) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    reset(data);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3500);
+    try {
+      setErrorMessage(null);
+      await settingsService.updateReceiptSettings(data);
+      reset(data);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3500);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update receipt settings";
+      setErrorMessage(message);
+    }
   };
 
   const handleTestPrint = () => {
@@ -67,6 +94,15 @@ export function ReceiptPrinterTab() {
           <p className="font-sans text-xs sm:text-sm font-medium">
             Thermal receipt customization and hardware rules saved successfully.
           </p>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="flex items-center gap-3 p-4 rounded-[16px] bg-status-error-bg border border-status-error/30 text-status-error text-xs font-medium"
+        >
+          {errorMessage}
         </div>
       )}
 

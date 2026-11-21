@@ -24,6 +24,9 @@ export interface PosCartProps {
   grandTotal: number;
   pointsEarned: number;
   heldBillsCount: number;
+  selectedCartIndex?: number;
+  customerInputRef?: React.RefObject<HTMLInputElement | null>;
+  discountInputRef?: React.RefObject<HTMLInputElement | null>;
   onUpdateQty: (cartItemId: string, newQty: number) => void;
   onRemoveItem: (cartItemId: string) => void;
   onSetItemDiscount: (
@@ -55,6 +58,9 @@ export function PosCart({
   grandTotal,
   pointsEarned,
   heldBillsCount,
+  selectedCartIndex,
+  customerInputRef,
+  discountInputRef,
   onUpdateQty,
   onRemoveItem,
   onSetItemDiscount,
@@ -100,20 +106,29 @@ export function PosCart({
           customer={customer}
           onAttachCustomer={onAttachCustomer}
           onDetachCustomer={onDetachCustomer}
+          inputRef={customerInputRef}
         />
       </div>
 
       {/* 2. Middle: Cart Items List or Empty State */}
       <div className="flex-1 overflow-y-auto custom-scrollbar py-3 min-h-[180px] flex flex-col gap-3">
         {cartItems.length > 0 ? (
-          cartItems.map((item) => (
-            <PosCartItemRow
+          cartItems.map((item, idx) => (
+            <div
               key={item.id}
-              item={item}
-              onUpdateQty={onUpdateQty}
-              onRemoveItem={onRemoveItem}
-              onSetDiscount={onSetItemDiscount}
-            />
+              className={`rounded-[16px] transition-all ${
+                selectedCartIndex === idx
+                  ? "ring-2 ring-primary/60 bg-subtle/40 shadow-xs"
+                  : ""
+              }`}
+            >
+              <PosCartItemRow
+                item={item}
+                onUpdateQty={onUpdateQty}
+                onRemoveItem={onRemoveItem}
+                onSetDiscount={onSetItemDiscount}
+              />
+            </div>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center py-10 gap-2.5">
@@ -145,17 +160,21 @@ export function PosCart({
         {/* Bill-level Discount Bar */}
         {cartItems.length > 0 && (
           <div className="flex items-center justify-between gap-2 text-xs font-sans">
-            <span className="text-body font-medium">Bill discount</span>
+            <span className="text-body font-medium">Bill discount (F4)</span>
             <div className="flex items-center gap-1.5">
               <div className="relative">
                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-[11px]">
                   Rs.
                 </span>
                 <input
+                  ref={discountInputRef}
                   type="number"
                   min={0}
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleApplyBillDiscount();
+                  }}
                   placeholder="0"
                   className="w-20 pl-7 pr-2 py-1 rounded-[8px] border border-default bg-card text-xs font-sans text-heading focus:border-focus focus:outline-none"
                 />
@@ -165,7 +184,7 @@ export function PosCart({
                 variant="outline"
                 size="sm"
                 onClick={handleApplyBillDiscount}
-                className="h-7 px-3 rounded-full text-xs font-sans font-medium border-default hover:bg-subtle/80 text-heading"
+                className="h-7 px-3 rounded-full text-xs font-sans font-medium border-default hover:bg-subtle/80 text-heading cursor-pointer"
               >
                 Apply
               </Button>
@@ -226,8 +245,8 @@ export function PosCart({
                 variant="outline"
                 size="md"
                 onClick={onClearCart}
-                className="rounded-full px-4 text-xs font-sans border-default hover:bg-subtle/50"
-                title="Clear entire cart"
+                className="rounded-full px-4 text-xs font-sans border-default hover:bg-subtle/50 cursor-pointer"
+                title="Clear entire cart (F8 or Alt+X)"
               >
                 Clear
               </Button>
@@ -237,8 +256,8 @@ export function PosCart({
                 variant="outline"
                 size="md"
                 onClick={onOpenHeldBills}
-                className="rounded-full px-3 text-xs font-sans border-default hover:bg-subtle/50"
-                title="Park this bill"
+                className="rounded-full px-3 text-xs font-sans border-default hover:bg-subtle/50 cursor-pointer"
+                title="Park this bill (F6)"
               >
                 Hold
               </Button>

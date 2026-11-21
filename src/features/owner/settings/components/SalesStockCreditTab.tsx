@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { salesStockCreditSchema, SalesStockCreditSchemaType } from "../schemas";
 import { INITIAL_SALES_STOCK_CREDIT_SETTINGS } from "../constants";
+import { settingsService } from "../services/settings.service";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -28,6 +29,7 @@ const PAYMENT_METHOD_OPTIONS = [
 
 export function SalesStockCreditTab() {
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const {
     register,
@@ -41,11 +43,36 @@ export function SalesStockCreditTab() {
     mode: "onChange",
   });
 
+  // Load live sales, stock, and credit rules from backend
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadSalesSettings() {
+      try {
+        const res = await settingsService.getAllSettings();
+        if (isMounted && res.salesStockCredit) {
+          reset(res.salesStockCredit);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+    loadSalesSettings();
+    return () => {
+      isMounted = false;
+    };
+  }, [reset]);
+
   const onSubmit = async (data: SalesStockCreditSchemaType) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    reset(data);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3500);
+    try {
+      setErrorMessage(null);
+      await settingsService.updateSalesStockCreditRules(data);
+      reset(data);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3500);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update sales & credit rules";
+      setErrorMessage(message);
+    }
   };
 
   return (
@@ -56,6 +83,15 @@ export function SalesStockCreditTab() {
           <p className="font-sans text-xs sm:text-sm font-medium">
             POS checkout, inventory thresholds, and Khata credit rules saved successfully.
           </p>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="flex items-center gap-3 p-4 rounded-[16px] bg-status-error-bg border border-status-error/30 text-status-error text-xs font-medium"
+        >
+          {errorMessage}
         </div>
       )}
 

@@ -18,10 +18,19 @@ import {
   DeadStockRow,
   StockMovementRow,
 } from "../types";
+import { FullInventoryReportData } from "../services/reports-analytics.service";
 import { Download, PackageOpen } from "lucide-react";
 
-export function InventoryReportTab() {
-  const summary = MOCK_INVENTORY_SUMMARY;
+interface InventoryReportTabProps {
+  data?: FullInventoryReportData | null;
+}
+
+export function InventoryReportTab({ data }: InventoryReportTabProps) {
+  const summary = data?.summary || MOCK_INVENTORY_SUMMARY;
+  const stockValuation = data?.stockValuation?.length ? data.stockValuation : MOCK_STOCK_VALUATION;
+  const lowStock = data?.lowStock?.length ? data.lowStock : MOCK_LOW_STOCK;
+  const deadStock = data?.deadStock?.length ? data.deadStock : MOCK_DEAD_STOCK;
+  const stockMovements = data?.stockMovements?.length ? data.stockMovements : MOCK_STOCK_MOVEMENTS;
 
   // 1. Current Stock & Valuation Columns
   const valuationColumns: ColumnDef<StockValuationRow>[] = [
@@ -182,7 +191,7 @@ export function InventoryReportTab() {
     exportToCsv(
       "inventory_stock_valuation",
       ["Product", "SKU", "Units On Hand", "Unit Cost", "Total Value"],
-      MOCK_STOCK_VALUATION.map((s) => [s.product, s.sku, s.onHand, s.unitCost, s.value])
+      stockValuation.map((s) => [s.product, s.sku, s.onHand, s.unitCost, s.value])
     );
   };
 
@@ -190,7 +199,7 @@ export function InventoryReportTab() {
     exportToCsv(
       "low_stock_report",
       ["Variant", "On Hand", "Reorder Threshold"],
-      MOCK_LOW_STOCK.map((l) => [l.variant, l.onHand, l.reorderAt])
+      lowStock.map((l) => [l.variant, l.onHand, l.reorderAt])
     );
   };
 
@@ -198,7 +207,7 @@ export function InventoryReportTab() {
     exportToCsv(
       "dead_slow_stock_report",
       ["Product", "Unit Cost", "Tied-Up Value"],
-      MOCK_DEAD_STOCK.map((d) => [d.product, d.unitCost, d.value])
+      deadStock.map((d) => [d.product, d.unitCost, d.value])
     );
   };
 
@@ -206,7 +215,7 @@ export function InventoryReportTab() {
     exportToCsv(
       "stock_movements_report",
       ["Time", "Type", "Product", "Quantity", "Reason"],
-      MOCK_STOCK_MOVEMENTS.map((m) => [m.time, m.type, m.product, m.quantity, m.reason])
+      stockMovements.map((m) => [m.time, m.type, m.product, m.quantity, m.reason])
     );
   };
 
@@ -269,7 +278,7 @@ export function InventoryReportTab() {
           </Button>
         </div>
         <DataTable
-          data={MOCK_STOCK_VALUATION}
+          data={stockValuation}
           columns={valuationColumns}
           keyExtractor={(item) => item.id}
           roundedTop={false}
@@ -295,7 +304,7 @@ export function InventoryReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_LOW_STOCK}
+            data={lowStock}
             columns={lowStockColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -319,7 +328,7 @@ export function InventoryReportTab() {
             </Button>
           </div>
           <DataTable
-            data={MOCK_DEAD_STOCK}
+            data={deadStock}
             columns={deadStockColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}
@@ -344,9 +353,9 @@ export function InventoryReportTab() {
           </Button>
         </div>
 
-        {MOCK_STOCK_MOVEMENTS.length > 0 ? (
+        {stockMovements.length > 0 ? (
           <DataTable
-            data={MOCK_STOCK_MOVEMENTS}
+            data={stockMovements}
             columns={movementColumns}
             keyExtractor={(item) => item.id}
             roundedTop={false}

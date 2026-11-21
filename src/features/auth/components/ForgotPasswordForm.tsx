@@ -41,8 +41,9 @@ export function ForgotPasswordForm() {
       await authService.forgotPassword(data);
       setIsSuccess(true);
       router.push("/verify-otp");
-    } catch {
-      setSubmissionError("Unable to request OTP. Please check your email and try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unable to request OTP. Please check your email and try again.";
+      setSubmissionError(message);
     }
   };
 

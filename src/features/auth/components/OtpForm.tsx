@@ -48,11 +48,22 @@ export function OtpForm() {
   const onSubmit = async (data: OtpSchemaInput) => {
     try {
       setSubmissionError(null);
-      await authService.verifyOtp(data);
-      // Navigate to reset-password screen upon successful OTP verification
-      router.push("/reset-password");
-    } catch {
-      setSubmissionError("Invalid or expired verification code. Please try again.");
+      const purpose = typeof window !== "undefined" ? sessionStorage.getItem("auth_otp_purpose") : null;
+
+      if (purpose === "FORGOT_PASSWORD") {
+        // For password reset, store verified OTP for the reset-password form
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("auth_reset_otp", data.otp);
+        }
+        router.push("/reset-password");
+      } else {
+        // For signup onboarding, verify with backend
+        await authService.verifyOtp(data);
+        router.push("/login?verified=true");
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Invalid or expired verification code. Please try again.";
+      setSubmissionError(message);
     }
   };
 
@@ -65,8 +76,9 @@ export function OtpForm() {
       setResendNotice("A new 6-digit verification code has been sent.");
       setCountdown(60);
       setTimeout(() => setResendNotice(null), 5000);
-    } catch {
-      setSubmissionError("Failed to resend code. Please try again shortly.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to resend code. Please try again shortly.";
+      setSubmissionError(message);
     } finally {
       setIsResending(false);
     }
