@@ -30,9 +30,23 @@ export class ApiError extends Error {
   }
 }
 
+export interface RequestOptions extends RequestInit {
+  /**
+   * Time-to-live in milliseconds for caching safe idempotent GET requests.
+   * Prevents repeated duplicate hits during component transitions.
+   */
+  cacheTtlMs?: number;
+  /**
+   * Bypasses client-side memory cache
+   */
+  skipCache?: boolean;
+}
+
 export class ApiClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
+  private cache = new Map<string, { data: unknown; expiresAt: number }>();
+  private inFlight = new Map<string, Promise<unknown>>();
 
   constructor(config: ApiClientConfig = {}) {
     const rawUrl = config.baseUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
@@ -186,11 +200,62 @@ export class ApiClient {
     return payload as T;
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+  /**
+   * Invalidates client-side memory cache
+   */
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Idempotent GET with in-flight deduplication and intelligent short-term memory caching.
+   * Eliminates redundant duplicate hits when navigating between screens.
+   */
+  async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
+    const cacheKey = endpoint;
+    const now = Date.now();
+
+    // 1. Check valid memory cache
+    if (!options?.skipCache) {
+      const cached = this.cache.get(cacheKey);
+      if (cached && now < cached.expiresAt) {
+        return cached.data as T;
+      }
+    }
+
+    // 2. Join in-flight Promise if identical request is already active (deduplication)
+    if (this.inFlight.has(cacheKey)) {
+      return this.inFlight.get(cacheKey) as Promise<T>;
+    }
+
+    // 3. Dispatch new request
+    const requestPromise = this.request<T>(endpoint, { ...options, method: "GET" })
+      .then((data) => {
+        // Safe routes to cache (settings, tenant metadata, or explicit cacheTtlMs)
+        const ttl =
+          options?.cacheTtlMs ??
+          (endpoint.includes("/settings") || endpoint.includes("/tenants/store")
+            ? 30000 // 30 seconds
+            : 0);
+
+        if (ttl > 0 && !options?.skipCache) {
+          this.cache.set(cacheKey, {
+            data,
+            expiresAt: Date.now() + ttl,
+          });
+        }
+        return data;
+      })
+      .finally(() => {
+        this.inFlight.delete(cacheKey);
+      });
+
+    this.inFlight.set(cacheKey, requestPromise as Promise<unknown>);
+    return requestPromise;
   }
 
   async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    this.clearCache(); // Invalidate on mutation
     return this.request<T>(endpoint, {
       ...options,
       method: "POST",
@@ -199,6 +264,7 @@ export class ApiClient {
   }
 
   async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    this.clearCache(); // Invalidate on mutation
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
@@ -207,6 +273,7 @@ export class ApiClient {
   }
 
   async patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    this.clearCache(); // Invalidate on mutation
     return this.request<T>(endpoint, {
       ...options,
       method: "PATCH",
@@ -215,6 +282,7 @@ export class ApiClient {
   }
 
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    this.clearCache(); // Invalidate on mutation
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 }
