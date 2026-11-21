@@ -7,6 +7,7 @@ import { usePathname, useParams } from "next/navigation";
 import { ScanLine, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/features/auth";
 
 export interface CashierHeaderProps {
   className?: string;
@@ -16,11 +17,61 @@ export interface CashierHeaderProps {
 
 export function CashierHeader({
   className,
-  cashierName = "Bilal Ahmed",
-  cashierRole = "Cashier",
+  cashierName: propCashierName,
+  cashierRole: propCashierRole,
 }: CashierHeaderProps) {
   const pathname = usePathname();
   const params = useParams();
+  const { user, activeProfile, activeRole } = useAuth();
+
+  const [activeCashierName, setActiveCashierName] = React.useState<string>(() => {
+    if (propCashierName) return propCashierName;
+    if (typeof window !== "undefined") {
+      try {
+        const activeProf = localStorage.getItem("active_profile");
+        if (activeProf) {
+          const parsed = JSON.parse(activeProf);
+          if (parsed.displayName) return parsed.displayName;
+        }
+        const session = localStorage.getItem("cashier_session");
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed.cashierName) return parsed.cashierName;
+        }
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const parsed = JSON.parse(userStr);
+          if (parsed.fullName) return parsed.fullName;
+        }
+      } catch {}
+    }
+    return "Staff";
+  });
+
+  const [activeCashierRole, setActiveCashierRole] = React.useState<string>(() => {
+    if (propCashierRole) return propCashierRole;
+    if (typeof window !== "undefined") {
+      try {
+        const role = localStorage.getItem("active_role") || sessionStorage.getItem("active_role");
+        if (role === "OWNER") return "Store Owner";
+      } catch {}
+    }
+    return "Cashier";
+  });
+
+  React.useEffect(() => {
+    if (propCashierName) {
+      setActiveCashierName(propCashierName);
+      return;
+    }
+    if (activeProfile?.displayName) {
+      setActiveCashierName(activeProfile.displayName);
+      setActiveCashierRole(activeProfile.role === "OWNER" ? "Store Owner" : "Cashier");
+    } else if (user?.fullName) {
+      setActiveCashierName(user.fullName);
+      setActiveCashierRole(activeRole === "OWNER" ? "Store Owner" : "Cashier");
+    }
+  }, [propCashierName, activeProfile, user, activeRole]);
 
   const storeSlug = (params?.storeSlug as string) || "noor-pret";
   const counterId = (params?.counterId as string) || "1";
@@ -109,10 +160,10 @@ export function CashierHeader({
         {/* Cashier Name & Role */}
         <div className="hidden sm:flex flex-col items-end text-right select-none">
           <p className="font-sans font-medium text-sm text-dark-primary leading-tight">
-            {cashierName}
+            {activeCashierName}
           </p>
           <p className="font-sans font-normal text-xs text-dark-secondary leading-tight">
-            {cashierRole}
+            {activeCashierRole}
           </p>
         </div>
 

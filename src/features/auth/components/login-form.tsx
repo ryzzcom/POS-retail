@@ -47,6 +47,9 @@ export function LoginForm() {
         if (res.token) {
           localStorage.setItem("auth_token", res.token);
         }
+        if (res.user) {
+          localStorage.setItem("user", JSON.stringify(res.user));
+        }
         if (res.store) {
           localStorage.setItem("active_store", JSON.stringify(res.store));
         }

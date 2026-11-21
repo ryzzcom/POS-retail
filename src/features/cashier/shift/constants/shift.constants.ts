@@ -3,7 +3,7 @@ import { ShiftSummary, ShiftTransaction } from "../types";
 export const MOCK_SHIFT_DATA: ShiftSummary = {
   status: "open",
   openedAt: "10:02 AM",
-  openedBy: "Bilal Ahmed",
+  openedBy: "Staff",
   startingFloatPKR: 5000,
   netSalesPKR: 9290,
   receiptsCount: 2,

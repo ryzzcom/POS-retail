@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PosHeader } from "./PosHeader";
 import { PosProductCatalog } from "./PosProductCatalog";
@@ -14,6 +14,8 @@ import { MOCK_POS_PRODUCTS } from "../constants";
 import { posService } from "../services";
 import { PosTender, PosSaleResult, PosProduct } from "../types";
 import { formatPKR } from "@/lib/formatters";
+import { apiClient } from "@/lib/api-client";
+import { authService } from "@/features/auth";
 
 export interface PosTerminalViewProps {
   counterName?: string;
@@ -28,12 +30,96 @@ export interface PosTerminalViewProps {
  * 100% Keyboard-Accessible with full Barcode Scanner support and Mobile Responsiveness.
  */
 export function PosTerminalView({
-  counterName = "Counter 1",
-  cashierName = "Bilal Ahmed",
-  shiftInfo = "Shift opened 10:02 AM by Bilal Ahmed",
+  counterName: propCounterName,
+  cashierName: propCashierName,
+  shiftInfo: propShiftInfo,
   onExit,
 }: PosTerminalViewProps) {
   const router = useRouter();
+
+  // Dynamic user & counter resolution
+  const [activeCashierName, setActiveCashierName] = useState<string>(() => {
+    if (propCashierName) return propCashierName;
+    if (typeof window !== "undefined") {
+      try {
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.displayName) return parsed.displayName;
+        }
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.cashierName) return parsed.cashierName;
+        }
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.fullName) return parsed.fullName;
+          if (parsed.displayName) return parsed.displayName;
+        }
+      } catch {}
+    }
+    return "Staff";
+  });
+
+  const [activeCounterName, setActiveCounterName] = useState<string>(() => {
+    if (propCounterName) return propCounterName;
+    if (typeof window !== "undefined") {
+      try {
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.assignedCounter?.name) return parsed.assignedCounter.name;
+        }
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.assignedCounterId) {
+            return `Counter ${parsed.assignedCounterId.replace(/^\D+/g, "") || "1"}`;
+          }
+        }
+      } catch {}
+    }
+    return "Counter 1";
+  });
+
+  // Hydrate user profile from backend session if not found in local cache
+  useEffect(() => {
+    let isMounted = true;
+    if (!apiClient.getToken()) return;
+
+    authService
+      .getMe()
+      .then((meRes) => {
+        if (!isMounted) return;
+        if (meRes.user?.fullName) {
+          localStorage.setItem("user", JSON.stringify(meRes.user));
+          setActiveCashierName((prev) =>
+            prev === "Staff" ? meRes.user.fullName : prev
+          );
+        }
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          try {
+            const parsed = JSON.parse(storedProfile);
+            if (parsed.displayName) setActiveCashierName(parsed.displayName);
+          } catch {}
+        } else if (meRes.user?.fullName) {
+          setActiveCashierName(meRes.user.fullName);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const dynamicShiftInfo = useMemo(() => {
+    if (propShiftInfo) return propShiftInfo;
+    return `Shift active · ${activeCashierName}`;
+  }, [propShiftInfo, activeCashierName]);
 
   // Live Products State
   const [products, setProducts] = useState<PosProduct[]>(MOCK_POS_PRODUCTS);
@@ -80,7 +166,7 @@ export function PosTerminalView({
     recallBill,
     clearCart,
     completeSale,
-  } = usePosCart(cashierName, counterName);
+  } = usePosCart(activeCashierName, activeCounterName);
 
   // Modal Visibility States
   const [isHeldBillsOpen, setIsHeldBillsOpen] = useState(false);
@@ -289,9 +375,9 @@ export function PosTerminalView({
       <div className="w-full flex-1 bg-page rounded-[20px] sm:rounded-[28px] overflow-hidden flex flex-col p-3 sm:p-6 gap-3 sm:gap-4">
         {/* 1. POS Top Bar Header */}
         <PosHeader
-          counterName={counterName}
-          shiftInfo={shiftInfo}
-          cashierName={cashierName}
+          counterName={activeCounterName}
+          shiftInfo={dynamicShiftInfo}
+          cashierName={activeCashierName}
           onOpenMySales={handleOpenMySales}
           onCloseShift={handleCloseShift}
           onOpenShortcuts={() => setIsShortcutsOpen(true)}

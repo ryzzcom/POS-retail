@@ -11,7 +11,7 @@ import {
   PosSaleResult,
 } from "../types";
 
-export function usePosCart(cashierName: string = "Bilal Ahmed", counterId: string = "1") {
+export function usePosCart(cashierName: string = "Staff", counterId: string = "1") {
   const [cartItems, setCartItems] = useState<PosCartItem[]>([]);
   const [customer, setCustomer] = useState<PosCustomer | null>(null);
   const [heldBills, setHeldBills] = useState<PosHeldBill[]>([]);

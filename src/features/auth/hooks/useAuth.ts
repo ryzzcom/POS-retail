@@ -22,6 +22,9 @@ export function useAuth() {
       const storedToken = apiClient.getToken();
       setToken(storedToken);
 
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) setUser(JSON.parse(storedUser));
+
       const storedStore = localStorage.getItem("active_store");
       if (storedStore) setStore(JSON.parse(storedStore));
 
@@ -31,6 +34,32 @@ export function useAuth() {
       const storedRole = (localStorage.getItem("active_role") ||
         sessionStorage.getItem("active_role")) as "OWNER" | "CASHIER" | null;
       if (storedRole) setActiveRole(storedRole);
+
+      // Hydrate via getMe if token exists but user or profile missing in cache
+      if (storedToken && (!storedUser || !storedProfile)) {
+        authService.getMe().then((meRes) => {
+          if (meRes.user) {
+            setUser(meRes.user);
+            localStorage.setItem("user", JSON.stringify(meRes.user));
+          }
+          if (meRes.store) {
+            setStore(meRes.store);
+            localStorage.setItem("active_store", JSON.stringify(meRes.store));
+          }
+          if (meRes.profiles && meRes.profiles.length > 0 && !storedProfile) {
+            const defaultProf: StaffProfile = {
+              id: meRes.profiles[0].id,
+              displayName: meRes.profiles[0].displayName,
+              role: meRes.profiles[0].role,
+              isPinSet: true,
+              maxDiscountPct: meRes.profiles[0].maxDiscountPct,
+              assignedCounterId: meRes.profiles[0].assignedCounterId || null,
+            };
+            setActiveProfile(defaultProf);
+            localStorage.setItem("active_profile", JSON.stringify(defaultProf));
+          }
+        }).catch(() => {});
+      }
     } catch {
       // Storage parsing failed
     } finally {

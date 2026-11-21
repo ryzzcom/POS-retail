@@ -41,7 +41,7 @@ export interface OwnerHeaderProps {
 
 export function OwnerHeader({
   date,
-  userName = "Ayesha Khan",
+  userName = "Store Owner",
   userRole = "Store Owner",
   posHref = "/pos?from=owner",
   onLogout,
@@ -68,7 +68,25 @@ export function OwnerHeader({
   }, [date]);
 
   // Read active profile / user context
-  const effectiveName = activeProfile?.displayName || user?.fullName || userName;
+  const effectiveName = React.useMemo(() => {
+    if (activeProfile?.displayName) return activeProfile.displayName;
+    if (user?.fullName) return user.fullName;
+    if (typeof window !== "undefined") {
+      try {
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.displayName) return parsed.displayName;
+        }
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const parsed = JSON.parse(userStr);
+          if (parsed.fullName) return parsed.fullName;
+        }
+      } catch {}
+    }
+    return userName || "Store Owner";
+  }, [activeProfile, user, userName]);
   const effectiveRole =
     activeRole === "OWNER"
       ? "Store Owner"

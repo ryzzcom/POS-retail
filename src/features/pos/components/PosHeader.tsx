@@ -28,7 +28,8 @@ export interface PosHeaderProps {
  */
 export function PosHeader({
   counterName = "Counter 1",
-  shiftInfo = "Shift opened 10:02 AM by Bilal Ahmed",
+  shiftInfo,
+  cashierName,
   onCloseShift,
   onOpenMySales,
   onOpenShortcuts,
@@ -37,6 +38,10 @@ export function PosHeader({
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
+
+  const effectiveShiftInfo =
+    shiftInfo ||
+    (cashierName ? `Shift active · ${cashierName}` : "Shift active");
 
   const handleExit = () => {
     if (onExit) {
@@ -73,7 +78,7 @@ export function PosHeader({
             {counterName}
           </span>
           <span className="hidden md:inline font-sans text-xs text-body truncate">
-            {shiftInfo}
+            {effectiveShiftInfo}
           </span>
         </div>
       </div>

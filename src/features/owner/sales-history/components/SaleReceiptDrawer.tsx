@@ -30,7 +30,7 @@ export function SaleReceiptDrawer({
   // Fallback data for Figma Receipt NP-010420 if no dynamic receipt is passed
   const receiptNumber = receipt?.receiptNumber ?? "NP-010420";
   const customerName = receipt?.customerName ?? "Fatima Raza";
-  const cashierName = receipt?.cashierName ?? "Ayesha Khan";
+  const cashierName = receipt?.cashierName ?? "Store Staff";
   const time = receipt?.time ?? "2:05 PM";
   const dateStr = "11 Oct 2026";
 
