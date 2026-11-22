@@ -131,10 +131,18 @@ export const customerService = {
     productId: string;
     selectedColor?: string;
     userPhotoBase64?: string;
+    userPhotoUrl?: string;
   }): Promise<VirtualTryOnJob> => {
-    return apiClient.post<VirtualTryOnJob>("/customer/try-on/generate", payload, {
-      headers: getCustomerAuthHeaders(),
-    });
+    return apiClient.post<VirtualTryOnJob>(
+      "/customer/try-on/generate",
+      {
+        ...payload,
+        userPhotoUrl: payload.userPhotoUrl || payload.userPhotoBase64,
+      },
+      {
+        headers: getCustomerAuthHeaders(),
+      },
+    );
   },
 
   /**
