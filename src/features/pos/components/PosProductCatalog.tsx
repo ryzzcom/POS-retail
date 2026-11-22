@@ -24,16 +24,37 @@ export function PosProductCatalog({
   onAddToCart,
   searchInputRef,
 }: PosProductCatalogProps) {
-  const [selectedCategory, setSelectedCategory] = useState<PosCategory>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [variantModalProduct, setVariantModalProduct] = useState<PosProduct | null>(null);
+
+  // Dynamic category options derived from real store products
+  const categoryOptions = useMemo(() => {
+    const catsSet = new Set<string>();
+    products.forEach((p) => {
+      if (p.category && p.category.trim()) {
+        catsSet.add(p.category.trim());
+      }
+    });
+
+    if (catsSet.size === 0) {
+      return POS_CATEGORY_OPTIONS;
+    }
+
+    const options = [{ label: "All Items", value: "all" }];
+    catsSet.forEach((c) => {
+      options.push({ label: c, value: c });
+    });
+    return options;
+  }, [products]);
 
   // 1. Filtered products list
   const filteredProducts = useMemo(() => {
     return products.filter((prod) => {
-      // Category Match
+      // Category Match (case-insensitive & whitespace trimmed)
       const matchesCategory =
-        selectedCategory === "all" || prod.category === selectedCategory;
+        selectedCategory === "all" ||
+        prod.category.toLowerCase().trim() === selectedCategory.toLowerCase().trim();
 
       // Search Match
       const q = searchQuery.trim().toLowerCase();
@@ -116,9 +137,9 @@ export function PosProductCatalog({
       {/* 2. Category Filter Strip via SegmentedFilter */}
       <div className="w-full shrink-0 overflow-x-auto no-scrollbar">
         <SegmentedFilter
-          options={POS_CATEGORY_OPTIONS}
+          options={categoryOptions}
           value={selectedCategory}
-          onChange={(val) => setSelectedCategory(val as PosCategory)}
+          onChange={(val) => setSelectedCategory(val)}
           sizeVariant="default"
           className="w-max min-w-full bg-card border-default/60 p-1"
           aria-label="Product categories"

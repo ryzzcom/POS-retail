@@ -15,6 +15,23 @@ export interface PosProductCardProps {
 }
 
 /**
+ * Maps color names or raw swatch classes to standard Tailwind backgrounds without hex codes.
+ */
+function getColorSwatchClass(colorName: string): string {
+  if (!colorName) return "bg-primary";
+  if (colorName.startsWith("bg-")) return colorName;
+  const c = colorName.toLowerCase();
+  if (c.includes("black") || c.includes("charcoal")) return "bg-neutral-900";
+  if (c.includes("white") || c.includes("bone") || c.includes("ecru")) return "bg-neutral-100 border-default";
+  if (c.includes("grey") || c.includes("gray") || c.includes("mist")) return "bg-neutral-400";
+  if (c.includes("navy") || c.includes("blue")) return "bg-blue-700";
+  if (c.includes("green") || c.includes("olive") || c.includes("sage") || c.includes("moss")) return "bg-emerald-700";
+  if (c.includes("brown") || c.includes("mocha") || c.includes("caramel") || c.includes("tan") || c.includes("sand")) return "bg-amber-800";
+  if (c.includes("red") || c.includes("maroon") || c.includes("burgundy") || c.includes("terracotta")) return "bg-rose-700";
+  return "bg-primary";
+}
+
+/**
  * Product Card for POS catalog grid matching Figma node 3422:36302.
  */
 export function PosProductCard({
@@ -81,8 +98,8 @@ export function PosProductCard({
           {(Array.isArray(product.colorSwatches) ? product.colorSwatches : []).map((colorClass, idx) => (
             <span
               key={idx}
-              className={`size-2.5 sm:size-3 rounded-full border border-card shadow-xs ${typeof colorClass === "string" ? colorClass : "bg-primary"}`}
-              title={(Array.isArray(product.colorNames) && product.colorNames[idx]) || "Color"}
+              className={`size-2.5 sm:size-3 rounded-full border border-card shadow-xs shrink-0 ${getColorSwatchClass(colorClass)}`}
+              title={(Array.isArray(product.colorNames) && product.colorNames[idx]) || colorClass || "Color"}
             />
           ))}
         </div>
