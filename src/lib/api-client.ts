@@ -140,15 +140,24 @@ export class ApiClient {
     const url = this.resolveUrl(endpoint);
     const headers = this.buildHeaders(options.headers);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     let response: Response;
     try {
       response = await fetch(url, {
         ...options,
         headers,
+        signal: options.signal || controller.signal,
       });
     } catch (networkError: unknown) {
+      if (networkError instanceof Error && networkError.name === "AbortError") {
+        throw new ApiError("Server request timed out after 20 seconds. Please check your connection.", 408);
+      }
       const message = networkError instanceof Error ? networkError.message : "Network request failed";
       throw new ApiError(`Unable to connect to server: ${message}`, 0);
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     // Try parsing JSON response body
