@@ -264,11 +264,24 @@ export const authService = {
   },
 
   /**
-   * 4c. Reset Profile Security PIN using Password (POST /api/v1/auth/profile/reset-pin)
+   * 4c. Send PIN Reset OTP to Email (POST /api/v1/auth/profile/send-pin-otp)
+   */
+  sendPinResetOtp: async (data?: {
+    profileId?: string;
+  }): Promise<{ success: boolean; message: string; email?: string }> => {
+    return apiClient.post<{ success: boolean; message: string; email?: string }>(
+      "/auth/profile/send-pin-otp",
+      data || {},
+    );
+  },
+
+  /**
+   * 4d. Reset Profile Security PIN using Email OTP or Password (POST /api/v1/auth/profile/reset-pin)
    */
   resetProfilePin: async (data: {
     profileId: string;
-    password: string;
+    password?: string;
+    otp?: string;
     newPin: string;
     confirmNewPin: string;
   }): Promise<{ success: boolean; message: string }> => {

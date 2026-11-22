@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Store, Lock, ShieldCheck, LogOut, Loader2 } from "lucide-react";
+import { Store, Lock, ShieldCheck, LogOut, Loader2, Mail, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,12 +53,26 @@ export function SelectProfileView({
 
   // Reset PIN Dialog State
   const [isResetPinOpen, setIsResetPinOpen] = React.useState<boolean>(false);
+  const [resetMode, setResetMode] = React.useState<"OTP" | "PASSWORD">("OTP");
+  const [resetOtp, setResetOtp] = React.useState<string>("");
+  const [isSendingOtp, setIsSendingOtp] = React.useState<boolean>(false);
+  const [otpSentMessage, setOtpSentMessage] = React.useState<string | null>(null);
+  const [otpCooldown, setOtpCooldown] = React.useState<number>(0);
   const [resetPassword, setResetPassword] = React.useState<string>("");
   const [resetNewPin, setResetNewPin] = React.useState<string>("");
   const [resetConfirmPin, setResetConfirmPin] = React.useState<string>("");
   const [resetError, setResetError] = React.useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = React.useState<string | null>(null);
   const [isResetting, setIsResetting] = React.useState<boolean>(false);
+
+  // OTP Resend Cooldown Timer
+  React.useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setOtpCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [otpCooldown]);
 
   // Hydrate store info and live active staff profiles
   React.useEffect(() => {
@@ -268,14 +282,40 @@ export function SelectProfileView({
     [selectedProfile, pin, isUnlocking, onSelectProfile, activeStoreSlug, router]
   );
 
+  const handleSendPinOtp = async () => {
+    if (isSendingOtp || otpCooldown > 0) return;
+    try {
+      setIsSendingOtp(true);
+      setResetError(null);
+      const res = await authService.sendPinResetOtp({
+        profileId: selectedProfile?.id,
+      });
+      setOtpSentMessage(res.message || "A 6-digit verification code has been dispatched to your email.");
+      setOtpCooldown(60);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to send verification code. Please check connection.";
+      setResetError(msg);
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
   const handleResetPinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProfile) return;
 
-    if (!resetPassword.trim()) {
-      setResetError("Please enter your account password.");
-      return;
+    if (resetMode === "OTP") {
+      if (resetOtp.trim().length !== 6) {
+        setResetError("Please enter the complete 6-digit verification code sent to your email.");
+        return;
+      }
+    } else {
+      if (!resetPassword.trim()) {
+        setResetError("Please enter your account password.");
+        return;
+      }
     }
+
     if (!/^\d{4}$/.test(resetNewPin)) {
       setResetError("New PIN must be exactly 4 digits.");
       return;
@@ -290,7 +330,8 @@ export function SelectProfileView({
       setResetError(null);
       const res = await authService.resetProfilePin({
         profileId: selectedProfile.id,
-        password: resetPassword,
+        otp: resetMode === "OTP" ? resetOtp.trim() : undefined,
+        password: resetMode === "PASSWORD" ? resetPassword : undefined,
         newPin: resetNewPin,
         confirmNewPin: resetConfirmPin,
       });
@@ -300,6 +341,8 @@ export function SelectProfileView({
         setTimeout(() => {
           setIsResetPinOpen(false);
           setResetPassword("");
+          setResetOtp("");
+          setOtpSentMessage(null);
           const pinVal = resetNewPin;
           setResetNewPin("");
           setResetConfirmPin("");
@@ -308,7 +351,7 @@ export function SelectProfileView({
         }, 1200);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to reset PIN. Please check your password.";
+      const msg = err instanceof Error ? err.message : "Failed to reset PIN. Please check your verification code.";
       setResetError(msg);
     } finally {
       setIsResetting(false);
@@ -644,9 +687,45 @@ export function SelectProfileView({
               Reset Security PIN
             </h3>
             <p className="text-xs text-body">
-              Enter your account password to verify identity and choose a new 4-digit PIN for{" "}
+              Verify your identity to choose a new 4-digit PIN for{" "}
               <strong className="text-heading">{selectedProfile?.displayName}</strong>.
             </p>
+          </div>
+
+          {/* Verification Mode Selector: Email OTP vs Account Password */}
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-subtle/50 rounded-lg w-full border border-default/50">
+            <button
+              type="button"
+              onClick={() => {
+                setResetMode("OTP");
+                setResetError(null);
+              }}
+              className={cn(
+                "py-1.5 px-3 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                resetMode === "OTP"
+                  ? "bg-card text-heading shadow-xs font-semibold"
+                  : "text-body hover:text-heading"
+              )}
+            >
+              <Mail className="size-3.5 shrink-0" />
+              <span>Email OTP</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setResetMode("PASSWORD");
+                setResetError(null);
+              }}
+              className={cn(
+                "py-1.5 px-3 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                resetMode === "PASSWORD"
+                  ? "bg-card text-heading shadow-xs font-semibold"
+                  : "text-body hover:text-heading"
+              )}
+            >
+              <KeyRound className="size-3.5 shrink-0" />
+              <span>Password</span>
+            </button>
           </div>
 
           {resetError && (
@@ -663,19 +742,63 @@ export function SelectProfileView({
           )}
 
           <form onSubmit={handleResetPinSubmit} className="w-full space-y-3.5 text-left">
-            <div>
-              <label className="block text-xs font-medium text-heading mb-1">
-                Account Password <span className="text-status-error">*</span>
-              </label>
-              <input
-                type="password"
-                required
-                placeholder="Enter your account login password"
-                value={resetPassword}
-                onChange={(e) => setResetPassword(e.target.value)}
-                className="w-full h-10 px-3 text-sm rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-muted"
-              />
-            </div>
+            {resetMode === "OTP" ? (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-card border border-default/60 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-heading">
+                      Verification Code
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isSendingOtp || otpCooldown > 0}
+                      onClick={handleSendPinOtp}
+                      className="text-xs text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer flex items-center gap-1"
+                    >
+                      {isSendingOtp ? (
+                        <>
+                          <Loader2 className="size-3 animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      ) : otpCooldown > 0 ? (
+                        <span>Resend in {otpCooldown}s</span>
+                      ) : (
+                        <span>{otpSentMessage ? "Resend Code" : "Send Code to Email"}</span>
+                      )}
+                    </button>
+                  </div>
+                  {otpSentMessage && (
+                    <p className="text-[11px] text-status-success font-sans">
+                      {otpSentMessage}
+                    </p>
+                  )}
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    placeholder="Enter 6-digit code"
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="w-full h-10 px-3 text-center tracking-[6px] text-base font-bold rounded-lg border border-default bg-page text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:tracking-normal placeholder:text-xs placeholder:font-normal placeholder:text-muted"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-medium text-heading mb-1">
+                  Account Password <span className="text-status-error">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter your account login password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-muted"
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -716,7 +839,12 @@ export function SelectProfileView({
                 type="submit"
                 variant="primary"
                 fullWidth
-                disabled={isResetting || resetNewPin.length < 4 || resetNewPin !== resetConfirmPin || !resetPassword.trim()}
+                disabled={
+                  isResetting ||
+                  resetNewPin.length < 4 ||
+                  resetNewPin !== resetConfirmPin ||
+                  (resetMode === "OTP" ? resetOtp.length < 6 : !resetPassword.trim())
+                }
                 isLoading={isResetting}
               >
                 Reset PIN & Unlock
