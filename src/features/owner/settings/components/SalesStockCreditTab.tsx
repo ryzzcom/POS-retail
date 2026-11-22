@@ -18,6 +18,7 @@ import {
   Percent,
   Calendar,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react";
 
 const PAYMENT_METHOD_OPTIONS = [
@@ -354,6 +355,72 @@ export function SalesStockCreditTab() {
                 <Switch checked={field.value} onCheckedChange={field.onChange} />
               )}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Card 4: Customer Rewards & AI Try-On Credits */}
+      <div className="bg-card rounded-[18px] border border-default/50 p-5 sm:p-6 shadow-xs space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-default/40">
+          <div className="size-10 rounded-[12px] bg-accent/15 border border-accent/25 flex items-center justify-center text-primary">
+            <Sparkles className="size-5" />
+          </div>
+          <div>
+            <h3 className="font-heading font-semibold text-heading text-base sm:text-lg">
+              Customer Rewards & AI Try-On Credits
+            </h3>
+            <p className="text-xs sm:text-sm text-body font-sans">
+              Configure automated try-on credits awarded when shoppers register or complete checkout at POS counters.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <Input
+            label="First Purchase Bonus Credits"
+            type="number"
+            min={0}
+            placeholder="20"
+            helperText="Awarded on customer's 1st POS purchase (+20 default)"
+            error={errors.tryOnFirstPurchaseCredits?.message}
+            {...register("tryOnFirstPurchaseCredits")}
+          />
+
+          <Input
+            label="Repeat Purchase Credits"
+            type="number"
+            min={0}
+            placeholder="10"
+            helperText="Awarded on subsequent completed checkouts (+10 default)"
+            error={errors.tryOnRepeatPurchaseCredits?.message}
+            {...register("tryOnRepeatPurchaseCredits")}
+          />
+
+          <Input
+            label="New Signup Welcome Credits"
+            type="number"
+            min={0}
+            placeholder="5"
+            helperText="Granted immediately when customer links phone"
+            error={errors.tryOnSignupCredits?.message}
+            {...register("tryOnSignupCredits")}
+          />
+
+          <Input
+            label="Daily Free Tries"
+            type="number"
+            min={0}
+            placeholder="1"
+            helperText="Free try-on trials refreshed every 24 hours"
+            error={errors.tryOnDailyFreeTries?.message}
+            {...register("tryOnDailyFreeTries")}
+          />
+        </div>
+
+        <div className="p-4 rounded-[14px] bg-theme border border-default/50 flex items-start gap-3">
+          <Sparkles className="size-5 text-accent shrink-0 mt-0.5" />
+          <div className="text-xs text-body font-sans leading-relaxed">
+            <span className="font-medium text-heading">Multi-Store Privacy Guarantee:</span> Try-On credits and loyalty points earned at your boutique are strictly isolated to your store. Customers cannot spend your credits at other retailers, and other stores cannot access your shoppers&apos; history.
           </div>
         </div>
       </div>

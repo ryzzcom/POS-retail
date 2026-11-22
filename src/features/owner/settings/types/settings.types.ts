@@ -146,6 +146,10 @@ export interface SalesStockCreditFormValues {
   defaultPaymentDueDays: number;
   blockNewCreditWhenOverdue: boolean;
   autoSendWhatsAppReminder: boolean;
+  tryOnSignupCredits: number;
+  tryOnFirstPurchaseCredits: number;
+  tryOnRepeatPurchaseCredits: number;
+  tryOnDailyFreeTries: number;
 }
 
 // ========================================================

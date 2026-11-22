@@ -74,6 +74,10 @@ export const salesStockCreditSchema = z.object({
   defaultPaymentDueDays: z.coerce.number().min(1),
   blockNewCreditWhenOverdue: z.boolean(),
   autoSendWhatsAppReminder: z.boolean(),
+  tryOnSignupCredits: z.coerce.number().min(0),
+  tryOnFirstPurchaseCredits: z.coerce.number().min(0),
+  tryOnRepeatPurchaseCredits: z.coerce.number().min(0),
+  tryOnDailyFreeTries: z.coerce.number().min(0),
 });
 
 export type SalesStockCreditSchemaType = z.infer<typeof salesStockCreditSchema>;

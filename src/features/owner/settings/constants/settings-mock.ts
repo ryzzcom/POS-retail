@@ -238,4 +238,8 @@ export const INITIAL_SALES_STOCK_CREDIT_SETTINGS: SalesStockCreditFormValues = {
   defaultPaymentDueDays: 30,
   blockNewCreditWhenOverdue: true,
   autoSendWhatsAppReminder: true,
+  tryOnSignupCredits: 5,
+  tryOnFirstPurchaseCredits: 20,
+  tryOnRepeatPurchaseCredits: 10,
+  tryOnDailyFreeTries: 1,
 };
