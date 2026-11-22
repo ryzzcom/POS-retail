@@ -12,6 +12,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getActiveStoreName } from "@/lib";
 import { Send, Smartphone } from "lucide-react";
 
 interface TemplateEditorModalProps {
@@ -75,16 +76,17 @@ export function TemplateEditorModal({
     onSendTest(template, testPhone);
   };
 
-  // Preview replacement of variables with dummy values
+  // Preview replacement of variables with dynamic dummy values
+  const storeName = getActiveStoreName("Retail Boutique");
   const previewText = currentBody
     .replace(/\{\{name\}\}/g, "Fatima Raza")
-    .replace(/\{\{store\}\}/g, "Noor Pret & Boutique")
-    .replace(/\{\{receipt\}\}/g, "NP-010420")
+    .replace(/\{\{store\}\}/g, storeName)
+    .replace(/\{\{receipt\}\}/g, "REC-1042")
     .replace(/\{\{total\}\}/g, "Rs. 9,000")
     .replace(/\{\{points\}\}/g, "640")
     .replace(/\{\{balance\}\}/g, "Rs. 14,500")
-    .replace(/\{\{code\}\}/g, "SILK2026")
-    .replace(/\{\{link\}\}/g, "google.com/secret pret/review");
+    .replace(/\{\{code\}\}/g, "PROMO2026")
+    .replace(/\{\{link\}\}/g, "review.store.pk");
 
   return (
     <Dialog

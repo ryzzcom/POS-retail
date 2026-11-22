@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "POS Terminal | Noor Pret",
+  title: "POS Terminal | Retail SaaS",
   description: "Point of Sale Cashier Terminal & Checkout",
 };
 

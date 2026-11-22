@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, MessageCircle, Undo2 } from "lucide-react";
 import { ReceiptSummary } from "../types/sales-history.types";
 import { ReturnExchangeDialog } from "./ReturnExchangeDialog";
+import { getActiveStore, getActiveStoreName } from "@/lib";
 
 export interface SaleReceiptDrawerProps {
   receipt: ReceiptSummary | null;
@@ -26,6 +27,11 @@ export function SaleReceiptDrawer({
   const [isRetryingWhatsApp, setIsRetryingWhatsApp] = React.useState(false);
   const [reprintCount, setReprintCount] = React.useState(1);
   const [isReturnDialogOpen, setIsReturnDialogOpen] = React.useState(false);
+
+  const activeStore = React.useMemo(() => getActiveStore(), []);
+  const storeName = activeStore?.name || getActiveStoreName("Retail Boutique");
+  const storeAddress = activeStore?.address || "Commercial Area";
+  const storePhone = activeStore?.phone || "+92 300 1234567";
 
   // Fallback data for Figma Receipt NP-010420 if no dynamic receipt is passed
   const receiptNumber = receipt?.receiptNumber ?? "NP-010420";
@@ -227,15 +233,13 @@ export function SaleReceiptDrawer({
           <div className="bg-card rounded-[10px] p-3.5 border border-default/40 shadow-xs font-mono text-[11px] leading-relaxed text-heading flex flex-col">
               {/* Store Header */}
               <div className="text-center flex flex-col items-center">
-                <p className="font-bold text-[13px] tracking-tight text-heading">
-                  NOOR PRET & BOUTIQUE
+                <p className="font-bold text-[13px] tracking-tight text-heading uppercase">
+                  {storeName}
                 </p>
                 <p className="text-[10.5px] leading-tight text-heading mt-0.5">
-                  Shop 14, MM Alam Road, Gulberg III,
+                  {storeAddress}
                 </p>
-                <p className="text-[10.5px] leading-tight text-heading">Lahore</p>
-                <p className="text-[10.5px] leading-tight text-heading">Tel 0321-4567890</p>
-                <p className="text-[10.5px] leading-tight text-heading">NTN 4471902-3</p>
+                <p className="text-[10.5px] leading-tight text-heading">Tel {storePhone}</p>
               </div>
 
               {/* Duplicate Copy Label */}
@@ -306,7 +310,7 @@ export function SaleReceiptDrawer({
                 and cut unstitched fabric are non-returnable.
               </p>
               <p className="font-semibold text-center text-[10.5px] text-heading mt-2">
-                Thank you for shopping with Noor!
+                Thank you for shopping with {storeName}!
               </p>
             </div>
           </div>

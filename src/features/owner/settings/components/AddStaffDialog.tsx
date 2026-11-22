@@ -180,7 +180,7 @@ export function AddStaffDialog({
           <Input
             label="Email Address"
             type="email"
-            placeholder="staff@noorpret.pk"
+            placeholder="staff@store.pk"
             error={errors.email?.message}
             {...register("email")}
           />

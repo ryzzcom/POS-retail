@@ -334,7 +334,7 @@ export function ActivateAccountView() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="e.g. Shop #14, MM Alam Road, Gulberg III"
+                    placeholder="e.g. Shop #14, Commercial Avenue, DHA Phase 5"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     className="w-full h-11 pl-10 pr-3.5 text-sm rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted"

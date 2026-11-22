@@ -17,7 +17,7 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     receiptRef: "NP-010420",
     templateName: "Digital receipt",
     message:
-      "Assalam o Alaikum Fatima Raza, thank you for shopping at Noor Pret & Boutique. Receipt NP-010420 · Total Rs. 9,000. Points balance: 640.",
+      "Assalam o Alaikum Fatima Raza, thank you for shopping at our boutique. Receipt REC-010420 · Total Rs. 9,000. Points balance: 640.",
     status: "failed",
     updatedAt: "11 Oct 2026, 2:06 PM",
     failureReason: "Meta WhatsApp Cloud API rate limit exceeded. Please retry.",
@@ -30,7 +30,7 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     receiptRef: "NP-010419",
     templateName: "Digital receipt",
     message:
-      "Assalam o Alaikum Hira Siddiqui, thank you for shopping at Noor Pret & Boutique. Receipt NP-010419 · Total Rs. 4,650. Points balance: 210.",
+      "Assalam o Alaikum Hira Siddiqui, thank you for shopping at our boutique. Receipt REC-010419 · Total Rs. 4,650. Points balance: 210.",
     status: "delivered",
     updatedAt: "11 Oct 2026, 12:42 PM",
     category: "Digital receipt",
@@ -42,7 +42,7 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     receiptRef: "PO-000041",
     templateName: "Back in stock",
     message:
-      "Good news Mehwish Akhtar — Chiffon Formal Shirt (Emerald M) is back in stock at Noor Pret & Boutique. Visit soon, sizes go quickly.",
+      "Good news Mehwish Akhtar — Your item is back in stock at our boutique. Visit soon, sizes go quickly.",
     status: "failed",
     updatedAt: "24 Sep 2026, 10:00 AM",
     failureReason: "Recipient phone number not registered on WhatsApp.",
@@ -55,7 +55,7 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     receiptRef: "KHT-8820",
     templateName: "Khata reminder",
     message:
-      "Dear Ayesha Farooq, a gentle reminder that your balance at Noor Pret & Boutique is Rs. 14,500. Due date was 05 Oct 2026. Thank you.",
+      "Dear Ayesha Farooq, a gentle reminder that your balance at our boutique is Rs. 14,500. Due date was 05 Oct 2026. Thank you.",
     status: "delivered",
     updatedAt: "10 Oct 2026, 11:15 AM",
     category: "Khata reminder",
@@ -67,7 +67,7 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     receiptRef: "NP-010410",
     templateName: "Points balance update",
     message:
-      "Zainab Tariq, you now have 1,450 Noor points. Redeem them on your next visit to Gulberg Galleria.",
+      "Zainab Tariq, you now have 1,450 loyalty points. Redeem them on your next visit.",
     status: "sent",
     updatedAt: "09 Oct 2026, 4:20 PM",
     category: "Digital receipt",
@@ -76,10 +76,10 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     id: "log-6",
     customerName: "Bilquis Banu",
     customerPhone: "+92 301 7729103",
-    receiptRef: "CMP-SILK26",
+    receiptRef: "CMP-PROMO26",
     templateName: "New arrivals",
     message:
-      "Bilquis Banu, the Winter 26 collection has arrived at Noor Pret & Boutique. Use code SILK2026 for 15% off unstitched luxury lawn.",
+      "Bilquis Banu, the new collection has arrived at our boutique. Use code PROMO2026 for 15% off.",
     status: "delivered",
     updatedAt: "08 Oct 2026, 3:30 PM",
     category: "Campaign",
@@ -88,10 +88,10 @@ export const MOCK_MESSAGE_LOGS: MessageLogItem[] = [
     id: "log-7",
     customerName: "Noreen Khan",
     customerPhone: "+92 322 4491028",
-    receiptRef: "NP-010405",
+    receiptRef: "REC-010405",
     templateName: "Google review request",
     message:
-      "Thank you for visiting Noor Pret & Boutique, Noreen Khan. If you have a moment, we'd value your honest review: google.com/secret pret/review",
+      "Thank you for visiting our boutique, Noreen Khan. If you have a moment, we'd value your honest review: https://g.page/r/your-store/review",
     status: "read",
     updatedAt: "07 Oct 2026, 6:05 PM",
     category: "Review",
@@ -172,7 +172,7 @@ export const MOCK_TEMPLATES: TemplateItem[] = [
     name: "Points balance update",
     category: "Loyalty update",
     metaCategory: "Utility",
-    body: "{{name}}, you now have {{points}} Noor points. Redeem them on your next visit.",
+    body: "{{name}}, you now have {{points}} loyalty points. Redeem them on your next visit.",
     variables: ["{{name}}", "{{points}}"],
     language: "English",
     status: "Approved",
@@ -250,8 +250,8 @@ export const MOCK_AUTOMATED_RULES: AutomatedMessageRule[] = [
 
 export const MOCK_CONNECTION_CONFIG: ConnectionConsentConfig = {
   phoneNumberId: "389201948501832",
-  businessDisplayName: "Noor Pret & Luxury Boutique",
-  googleReviewLink: "google.com/secret pret/review",
+  businessDisplayName: "Retail Boutique",
+  googleReviewLink: "https://g.page/r/your-store/review",
   isApiEnabled: true,
   requireExplicitOptIn: true,
   enforceQuietHours: true,

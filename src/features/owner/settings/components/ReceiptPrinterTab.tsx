@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { SegmentedFilter, SegmentedFilterOption } from "@/components/ui/segmented-filter";
 import { formatPKR } from "@/lib/formatters";
+import { getActiveStoreName } from "@/lib";
 import {
   Printer,
   Sliders,
@@ -33,6 +34,14 @@ export function ReceiptPrinterTab() {
   const [testPrintSuccess, setTestPrintSuccess] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+  const dynamicInitialSettings = React.useMemo(() => {
+    const storeName = getActiveStoreName();
+    return {
+      ...INITIAL_RECEIPT_PRINTER_SETTINGS,
+      headerBusinessName: storeName,
+    };
+  }, []);
+
   const {
     register,
     control,
@@ -42,7 +51,7 @@ export function ReceiptPrinterTab() {
     reset,
   } = useForm<ReceiptPrinterSchemaType>({
     resolver: zodResolver(receiptPrinterSchema),
-    defaultValues: INITIAL_RECEIPT_PRINTER_SETTINGS,
+    defaultValues: dynamicInitialSettings,
     mode: "onChange",
   });
 
@@ -53,7 +62,11 @@ export function ReceiptPrinterTab() {
       try {
         const res = await settingsService.getAllSettings();
         if (isMounted && res.receiptPrinter) {
-          reset(res.receiptPrinter);
+          const fallbackName = res.storeProfile?.storeName || getActiveStoreName();
+          reset({
+            ...res.receiptPrinter,
+            headerBusinessName: res.receiptPrinter.headerBusinessName || fallbackName,
+          });
         }
       } catch {
         // Fallback gracefully
@@ -269,14 +282,14 @@ export function ReceiptPrinterTab() {
             <div className="space-y-4">
               <Input
                 label="Header Business Name"
-                placeholder="e.g. NOOR PRET & BOUTIQUE"
+                placeholder="e.g. Ryzz Menswear Luxury & Streetwear"
                 error={errors.headerBusinessName?.message}
                 {...register("headerBusinessName")}
               />
 
               <Input
                 label="Branch Address Line"
-                placeholder="e.g. Shop #14-16, Mall 94, MM Alam Road, Gulberg III, Lahore"
+                placeholder="e.g. Shop #14, Zamzama Commercial Lane 5, DHA Phase 5, Karachi"
                 error={errors.branchAddressLine?.message}
                 {...register("branchAddressLine")}
               />
@@ -284,14 +297,14 @@ export function ReceiptPrinterTab() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Contact Phone / WhatsApp"
-                  placeholder="+92 300 8472910"
+                  placeholder="+92 300 1234567"
                   error={errors.phoneOnReceipt?.message}
                   {...register("phoneOnReceipt")}
                 />
 
                 <Input
                   label="Social / Website Handle"
-                  placeholder="Instagram: @noorpret.pk"
+                  placeholder="Instagram: @yourstore.pk · www.yourstore.pk"
                   error={errors.instagramWebsiteHandle?.message}
                   {...register("instagramWebsiteHandle")}
                 />
@@ -431,17 +444,17 @@ export function ReceiptPrinterTab() {
                 <span>TOTAL</span>
               </div>
               <div>
-                <p className="font-medium">Raw Silk Embroidered Frock</p>
+                <p className="font-medium">Heavyweight Fleece Hoodie</p>
                 <div className="flex justify-between text-[10px] text-body pl-2">
-                  <span>1 x Rs. 4,500 (M / Navy)</span>
-                  <span>Rs. 4,500</span>
+                  <span>1 x Rs. 5,400 (L / Black)</span>
+                  <span>Rs. 5,400</span>
                 </div>
               </div>
               <div>
-                <p className="font-medium">Silk Dupatta Floral Emerald</p>
+                <p className="font-medium">Tailored Oxford Cotton Shirt</p>
                 <div className="flex justify-between text-[10px] text-body pl-2">
-                  <span>1 x Rs. 3,500 (Standard)</span>
-                  <span>Rs. 3,500</span>
+                  <span>1 x Rs. 3,950 (M / White)</span>
+                  <span>Rs. 3,950</span>
                 </div>
               </div>
             </div>
@@ -452,27 +465,27 @@ export function ReceiptPrinterTab() {
             <div className="text-[10px] space-y-1">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>Rs. 8,000</span>
+                <span>Rs. 9,350</span>
               </div>
               <div className="flex justify-between text-body">
-                <span>Item Discount (10%):</span>
+                <span>Item Discount:</span>
                 <span>-Rs. 500</span>
               </div>
               <div className="flex justify-between text-body">
-                <span>FBR Sales Tax (18%):</span>
+                <span>FBR Sales Tax (0%):</span>
                 <span>Included</span>
               </div>
               <div className="border-t border-heading/40 pt-1 flex justify-between font-bold text-xs">
                 <span>TOTAL PAID:</span>
-                <span>Rs. 7,500</span>
+                <span>Rs. 8,850</span>
               </div>
               <div className="flex justify-between text-body text-[9.5px]">
                 <span>Tendered via Cash:</span>
-                <span>Rs. 8,000</span>
+                <span>Rs. 9,000</span>
               </div>
               <div className="flex justify-between text-body text-[9.5px]">
                 <span>Change Returned:</span>
-                <span>Rs. 500</span>
+                <span>Rs. 150</span>
               </div>
             </div>
 

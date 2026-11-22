@@ -6,6 +6,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPKR } from "@/lib/formatters";
+import { getActiveStore, getActiveStoreName } from "@/lib";
 import { PosSaleResult } from "../types";
 
 export interface PosSaleCompletedModalProps {
@@ -25,6 +26,11 @@ export function PosSaleCompletedModal({
   const [paperWidth, setPaperWidth] = useState<"80mm" | "58mm">("80mm");
   const [printCount, setPrintCount] = useState<number>(1);
   const [whatsAppSent, setWhatsAppSent] = useState<boolean>(false);
+
+  const activeStore = React.useMemo(() => getActiveStore(), []);
+  const storeName = activeStore?.name || getActiveStoreName("Retail Boutique");
+  const storeAddress = activeStore?.address || "Main Commercial Area";
+  const storePhone = activeStore?.phone || "+92 300 1234567";
 
   if (!saleResult) return null;
 
@@ -50,13 +56,13 @@ export function PosSaleCompletedModal({
           {/* Receipt Store Header */}
           <div className="text-center pb-2 border-b border-dashed border-default">
             <h4 className="font-bold text-sm uppercase tracking-wide">
-              Noor Pret & Boutique
+              {storeName}
             </h4>
             <p className="text-[11px] text-body mt-0.5">
-              Shop 14, MM Alam Road, Gulberg III, Lahore
+              {storeAddress}
             </p>
             <p className="text-[11px] text-body">
-              Tel 0321-4567890 · NTN 4471902-3
+              Tel {storePhone}
             </p>
           </div>
 
@@ -155,7 +161,7 @@ export function PosSaleCompletedModal({
 
           <div className="text-center text-[10px] text-body pt-1 leading-tight">
             <p>Exchange within 7 days with receipt and tags attached.</p>
-            <p className="mt-1 font-semibold">Thank you for shopping with Noor!</p>
+            <p className="mt-1 font-semibold">Thank you for shopping at {storeName}!</p>
           </div>
         </div>
 

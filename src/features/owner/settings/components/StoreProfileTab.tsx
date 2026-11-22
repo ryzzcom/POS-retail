@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { storeProfileSchema, StoreProfileSchemaType } from "../schemas";
 import { INITIAL_STORE_PROFILE } from "../constants";
 import { settingsService } from "../services/settings.service";
+import { getActiveStoreName } from "@/lib";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -45,6 +46,14 @@ export function StoreProfileTab() {
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
+  const dynamicInitialStore = React.useMemo(() => {
+    const storeName = getActiveStoreName();
+    return {
+      ...INITIAL_STORE_PROFILE,
+      storeName,
+    };
+  }, []);
+
   const {
     register,
     control,
@@ -53,7 +62,7 @@ export function StoreProfileTab() {
     reset,
   } = useForm<StoreProfileSchemaType>({
     resolver: zodResolver(storeProfileSchema),
-    defaultValues: INITIAL_STORE_PROFILE,
+    defaultValues: dynamicInitialStore,
     mode: "onChange",
   });
 
@@ -64,7 +73,11 @@ export function StoreProfileTab() {
       try {
         const res = await settingsService.getAllSettings();
         if (isMounted && res.storeProfile) {
-          reset(res.storeProfile);
+          const fallbackName = getActiveStoreName();
+          reset({
+            ...res.storeProfile,
+            storeName: res.storeProfile.storeName || fallbackName,
+          });
         }
       } catch {
         // Fall back gracefully
@@ -159,7 +172,7 @@ export function StoreProfileTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           <Input
             label="Store / Brand Name"
-            placeholder="e.g. Noor Pret & Boutique"
+            placeholder="e.g. Ryzz Menswear Luxury & Streetwear"
             error={errors.storeName?.message}
             {...register("storeName")}
           />
@@ -242,7 +255,7 @@ export function StoreProfileTab() {
 
           <Input
             label="Area / Market"
-            placeholder="e.g. MM Alam Road, Gulberg III"
+            placeholder="e.g. Zamzama Commercial Area, DHA Phase 5"
             error={errors.areaMarket?.message}
             {...register("areaMarket")}
           />

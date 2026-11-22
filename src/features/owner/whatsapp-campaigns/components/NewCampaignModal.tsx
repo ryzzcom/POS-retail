@@ -11,6 +11,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { getActiveStoreName } from "@/lib";
 import { CheckCheck, Send, Smartphone } from "lucide-react";
 
 interface NewCampaignModalProps {
@@ -42,6 +43,7 @@ export function NewCampaignModal({
   availableCoupons,
   onSubmitCampaign,
 }: NewCampaignModalProps) {
+  const storeName = getActiveStoreName("Retail Boutique");
   const {
     register,
     handleSubmit,
@@ -213,10 +215,10 @@ export function NewCampaignModal({
               <div className="bg-primary text-dark-primary px-3 py-2 rounded-xl flex items-center justify-between text-xs font-sans">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-accent text-dark-primary flex items-center justify-center font-bold text-[10px]">
-                    N
+                    {storeName.charAt(0).toUpperCase()}
                   </span>
                   <div className="flex flex-col">
-                    <span className="font-medium">Noor Pret & Boutique</span>
+                    <span className="font-medium">{storeName}</span>
                     <span className="text-[10px] text-dark-secondary flex items-center gap-1">
                       Verified Business Account
                     </span>
@@ -230,7 +232,7 @@ export function NewCampaignModal({
                   Assalam o Alaikum <strong>Fatima Raza</strong>,
                 </p>
                 <p>
-                  {selectedTitle || "The Winter 26 luxury pret collection has officially arrived at Noor Pret & Boutique!"}
+                  {selectedTitle || `The new season collection has officially arrived at ${storeName}!`}
                 </p>
                 {selectedCoupon && (
                   <div className="p-2.5 rounded-lg bg-subtle/50 border border-default/40 flex flex-col gap-0.5">
@@ -241,7 +243,7 @@ export function NewCampaignModal({
                   </div>
                 )}
                 <p className="text-[11px] text-body">
-                  Valid across our Gulberg & DHA boutiques. Show this message at counter checkout to redeem.
+                  Valid across our store. Show this message at counter checkout to redeem.
                 </p>
 
                 <div className="flex items-center justify-end gap-1 text-[10px] text-muted pt-1">

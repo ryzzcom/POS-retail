@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api-client";
+import { getActiveStoreName } from "@/lib";
 import {
   MessageLogItem,
   CampaignItem,
@@ -121,7 +122,7 @@ export const whatsappCampaignsService = {
     const res = await apiClient.get<ConnectionConsentConfig>("/whatsapp/connection");
     return {
       phoneNumberId: res?.phoneNumberId || "",
-      businessDisplayName: res?.businessDisplayName || "Noor Pret & Boutique",
+      businessDisplayName: res?.businessDisplayName || getActiveStoreName("Retail Boutique"),
       googleReviewLink: res?.googleReviewLink || "https://g.page/r/example",
       isApiEnabled: res?.isApiEnabled ?? true,
       requireExplicitOptIn: res?.requireExplicitOptIn ?? true,

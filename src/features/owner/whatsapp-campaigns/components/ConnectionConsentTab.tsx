@@ -105,7 +105,7 @@ export function ConnectionConsentTab({
               onChange={(e) =>
                 setConfig((prev) => ({ ...prev, googleReviewLink: e.target.value }))
               }
-              placeholder="google.com/secret pret/review"
+              placeholder="https://g.page/r/your-store/review"
               disabled={!config.isApiEnabled}
             />
           </div>

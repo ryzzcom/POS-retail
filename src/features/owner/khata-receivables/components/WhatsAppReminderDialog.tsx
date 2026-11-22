@@ -5,6 +5,7 @@ import { MessageCircle, Copy, Check, ExternalLink } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/formatters";
+import { getActiveStoreName } from "@/lib";
 import { KhataAccount } from "../types/khata.types";
 
 interface WhatsAppReminderDialogProps {
@@ -24,7 +25,8 @@ export function WhatsAppReminderDialog({
 
   if (!account) return null;
 
-  const reminderText = `Assalam-o-Alaikum ${account.customerName} sahiba, gentle reminder from Noor Pret & Boutique regarding your outstanding Khata balance of ${formatPKR(account.balance)}, which has been open for ${account.oldestOpenDays} days. Kindly settle at your earliest convenience. JazakAllah khair!`;
+  const storeName = getActiveStoreName("our store");
+  const reminderText = `Assalam-o-Alaikum ${account.customerName}, gentle reminder from ${storeName} regarding your outstanding Khata balance of ${formatPKR(account.balance)}, which has been open for ${account.oldestOpenDays} days. Kindly settle at your earliest convenience. JazakAllah khair!`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(reminderText);
