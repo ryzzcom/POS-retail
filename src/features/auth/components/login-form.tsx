@@ -58,8 +58,12 @@ export function LoginForm() {
         }
       }
 
-      // Seamlessly navigate to staff profile selection upon successful authentication
-      router.push("/select-profile");
+      // If store has no profiles configured yet, guide owner to Store Setup & PIN creation
+      if (!res.profiles || res.profiles.length === 0) {
+        router.push("/activate-account");
+      } else {
+        router.push("/select-profile");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         if (err.message.includes("EMAIL_NOT_VERIFIED")) {

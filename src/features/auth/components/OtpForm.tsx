@@ -57,9 +57,9 @@ export function OtpForm() {
         }
         router.push("/reset-password");
       } else {
-        // For signup onboarding, verify with backend
+        // For signup onboarding, verify with backend and proceed to Store Setup & PIN selection
         await authService.verifyOtp(data);
-        router.push("/login?verified=true");
+        router.push("/activate-account");
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Invalid or expired verification code. Please try again.";

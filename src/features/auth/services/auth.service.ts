@@ -141,7 +141,7 @@ export const authService = {
    */
   verifyOtp: async (
     data: OtpInput & { email?: string }
-  ): Promise<AuthActionResponse> => {
+  ): Promise<AuthActionResponse & { needsOnboarding?: boolean }> => {
     let email = data.email;
     if (!email && typeof window !== "undefined") {
       email = sessionStorage.getItem("auth_pending_email") || undefined;
@@ -151,16 +151,131 @@ export const authService = {
       throw new Error("No pending verification email found. Please sign up or request a new code.");
     }
 
-    const res = await apiClient.post<{ message: string }>("/auth/verify-otp", {
+    const res = await apiClient.post<{
+      message: string;
+      accessToken?: string;
+      user?: UserContext;
+      store?: StoreContext;
+      needsOnboarding?: boolean;
+    }>("/auth/verify-otp", {
       email: email.trim().toLowerCase(),
       otp: data.otp.trim(),
     });
+
+    if (res.accessToken) {
+      apiClient.setToken(res.accessToken);
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        if (res.user) localStorage.setItem("user", JSON.stringify(res.user));
+        if (res.store) localStorage.setItem("active_store", JSON.stringify(res.store));
+      } catch {
+        // Ignore session storage errors
+      }
+    }
 
     return {
       success: true,
       message: res.message,
       email,
+      needsOnboarding: res.needsOnboarding ?? true,
     };
+  },
+
+  /**
+   * 4b. Complete Store Setup & Set 4-Digit Security PIN (POST /api/v1/auth/activate-account)
+   */
+  activateAccount: async (data: {
+    pin: string;
+    confirmPin: string;
+    storeName: string;
+    phone?: string;
+    whatsappNumber?: string;
+    city?: string;
+    address?: string;
+    website?: string;
+    logoUrl?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    user?: UserContext;
+    store?: StoreContext;
+    profiles?: StaffProfile[];
+  }> => {
+    const res = await apiClient.post<{
+      success: boolean;
+      message: string;
+      accessToken: string;
+      user: UserContext;
+      store: StoreContext;
+      profiles: Array<{
+        id: string;
+        displayName: string;
+        role: "OWNER" | "CASHIER";
+        maxDiscountPct?: number;
+        assignedCounterId?: string | null;
+      }>;
+    }>("/auth/activate-account", data);
+
+    if (res.accessToken) {
+      apiClient.setToken(res.accessToken);
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        if (res.user) localStorage.setItem("user", JSON.stringify(res.user));
+        if (res.store) localStorage.setItem("active_store", JSON.stringify(res.store));
+        if (res.profiles) {
+          const mapped: StaffProfile[] = res.profiles.map((p) => ({
+            id: p.id,
+            displayName: p.displayName,
+            role: p.role,
+            isPinSet: true,
+            maxDiscountPct: p.maxDiscountPct,
+            assignedCounterId: p.assignedCounterId || null,
+          }));
+          localStorage.setItem("store_profiles", JSON.stringify(mapped));
+          if (mapped.length > 0) {
+            localStorage.setItem("active_profile", JSON.stringify(mapped[0]));
+            localStorage.setItem("active_role", "OWNER");
+            sessionStorage.setItem("active_role", "OWNER");
+          }
+        }
+      } catch {
+        // Storage error ignored
+      }
+    }
+
+    return {
+      success: true,
+      message: res.message,
+      user: res.user,
+      store: res.store,
+      profiles: (res.profiles || []).map((p) => ({
+        id: p.id,
+        displayName: p.displayName,
+        role: p.role,
+        isPinSet: true,
+        maxDiscountPct: p.maxDiscountPct,
+        assignedCounterId: p.assignedCounterId || null,
+      })),
+    };
+  },
+
+  /**
+   * 4c. Reset Profile Security PIN using Password (POST /api/v1/auth/profile/reset-pin)
+   */
+  resetProfilePin: async (data: {
+    profileId: string;
+    password: string;
+    newPin: string;
+    confirmNewPin: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    return apiClient.post<{ success: boolean; message: string }>(
+      "/auth/profile/reset-pin",
+      data,
+    );
   },
 
   /**

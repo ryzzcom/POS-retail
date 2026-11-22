@@ -51,6 +51,15 @@ export function SelectProfileView({
   const [isUnlocking, setIsUnlocking] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
 
+  // Reset PIN Dialog State
+  const [isResetPinOpen, setIsResetPinOpen] = React.useState<boolean>(false);
+  const [resetPassword, setResetPassword] = React.useState<string>("");
+  const [resetNewPin, setResetNewPin] = React.useState<string>("");
+  const [resetConfirmPin, setResetConfirmPin] = React.useState<string>("");
+  const [resetError, setResetError] = React.useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = React.useState<string | null>(null);
+  const [isResetting, setIsResetting] = React.useState<boolean>(false);
+
   // Hydrate store info and live active staff profiles
   React.useEffect(() => {
     let isMounted = true;
@@ -259,6 +268,53 @@ export function SelectProfileView({
     [selectedProfile, pin, isUnlocking, onSelectProfile, activeStoreSlug, router]
   );
 
+  const handleResetPinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProfile) return;
+
+    if (!resetPassword.trim()) {
+      setResetError("Please enter your account password.");
+      return;
+    }
+    if (!/^\d{4}$/.test(resetNewPin)) {
+      setResetError("New PIN must be exactly 4 digits.");
+      return;
+    }
+    if (resetNewPin !== resetConfirmPin) {
+      setResetError("New PIN and confirmation do not match.");
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      setResetError(null);
+      const res = await authService.resetProfilePin({
+        profileId: selectedProfile.id,
+        password: resetPassword,
+        newPin: resetNewPin,
+        confirmNewPin: resetConfirmPin,
+      });
+
+      if (res.success) {
+        setResetSuccess("PIN reset successfully! Unlocking your profile...");
+        setTimeout(() => {
+          setIsResetPinOpen(false);
+          setResetPassword("");
+          const pinVal = resetNewPin;
+          setResetNewPin("");
+          setResetConfirmPin("");
+          setResetSuccess(null);
+          handleUnlock(pinVal);
+        }, 1200);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to reset PIN. Please check your password.";
+      setResetError(msg);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <div className="h-full w-full overflow-y-auto flex flex-col justify-between items-center px-4 py-6 sm:py-10 select-none">
       {/* Top Header: Brand Logo & Right Action Cluster */}
@@ -330,15 +386,26 @@ export function SelectProfileView({
             <p className="font-sans text-xs text-muted max-w-sm">
               Please sign out and sign in with the primary Store Owner account to configure staff profiles.
             </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAccountLogout}
-              className="text-xs font-sans mt-2"
-            >
-              Sign out to Login
-            </Button>
+            <div className="flex items-center gap-2 mt-2">
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={() => router.push("/activate-account")}
+                className="text-xs font-sans"
+              >
+                Setup Store & PIN &rarr;
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAccountLogout}
+                className="text-xs font-sans"
+              >
+                Sign out
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
@@ -523,6 +590,19 @@ export function SelectProfileView({
                   Unlock Terminal
                 </Button>
 
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setIsResetPinOpen(true);
+                    setResetError(null);
+                    setResetSuccess(null);
+                  }}
+                  className="text-xs text-primary font-medium hover:underline text-center py-1 transition-colors cursor-pointer"
+                >
+                  Forgot 4-digit PIN?
+                </button>
+
                 <Button
                   type="button"
                   variant="ghost"
@@ -538,6 +618,125 @@ export function SelectProfileView({
             </form>
           </div>
         )}
+      </Dialog>
+
+      {/* Forgot / Reset Security PIN Dialog */}
+      <Dialog
+        open={isResetPinOpen}
+        onClose={() => {
+          if (!isResetting) {
+            setIsResetPinOpen(false);
+            setResetError(null);
+            setResetSuccess(null);
+          }
+        }}
+        maxWidthClass="w-full sm:max-w-[420px]"
+        closeOnEsc={!isResetting}
+        closeOnBackdropClick={!isResetting}
+      >
+        <div className="flex flex-col items-center text-center p-6 sm:p-7 gap-5 w-full">
+          <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+            <Lock className="size-6" />
+          </div>
+
+          <div className="flex flex-col gap-1 w-full">
+            <h3 className="font-heading font-bold text-lg sm:text-xl text-heading">
+              Reset Security PIN
+            </h3>
+            <p className="text-xs text-body">
+              Enter your account password to verify identity and choose a new 4-digit PIN for{" "}
+              <strong className="text-heading">{selectedProfile?.displayName}</strong>.
+            </p>
+          </div>
+
+          {resetError && (
+            <div className="w-full p-2.5 rounded-lg bg-status-error-bg border border-status-error/30 text-xs text-status-error text-left">
+              {resetError}
+            </div>
+          )}
+
+          {resetSuccess && (
+            <div className="w-full p-2.5 rounded-lg bg-status-success-bg border border-status-success/30 text-xs text-status-success text-left flex items-center gap-2">
+              <ShieldCheck className="size-4 shrink-0" />
+              <span>{resetSuccess}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleResetPinSubmit} className="w-full space-y-3.5 text-left">
+            <div>
+              <label className="block text-xs font-medium text-heading mb-1">
+                Account Password <span className="text-status-error">*</span>
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="Enter your account login password"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                className="w-full h-10 px-3 text-sm rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-muted"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-heading mb-1">
+                  New 4-Digit PIN <span className="text-status-error">*</span>
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  required
+                  placeholder="1234"
+                  value={resetNewPin}
+                  onChange={(e) => setResetNewPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  className="w-full h-10 px-3 text-center tracking-[6px] text-base font-bold rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:tracking-normal placeholder:text-xs placeholder:font-normal placeholder:text-muted"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-heading mb-1">
+                  Confirm PIN <span className="text-status-error">*</span>
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  required
+                  placeholder="1234"
+                  value={resetConfirmPin}
+                  onChange={(e) => setResetConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  className="w-full h-10 px-3 text-center tracking-[6px] text-base font-bold rounded-lg border border-default bg-card text-heading focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:tracking-normal placeholder:text-xs placeholder:font-normal placeholder:text-muted"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                disabled={isResetting || resetNewPin.length < 4 || resetNewPin !== resetConfirmPin || !resetPassword.trim()}
+                isLoading={isResetting}
+              >
+                Reset PIN & Unlock
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                fullWidth
+                disabled={isResetting}
+                onClick={() => {
+                  setIsResetPinOpen(false);
+                  setIsModalOpen(true);
+                }}
+              >
+                Back to PIN entry
+              </Button>
+            </div>
+          </form>
+        </div>
       </Dialog>
     </div>
   );
