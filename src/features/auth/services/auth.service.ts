@@ -112,7 +112,7 @@ export const authService = {
       (data as Record<string, unknown>).storeName?.toString() ||
       (data.fullName.trim() ? `${data.fullName.trim()}'s Boutique` : "Boutique Retail");
 
-    const res = await apiClient.post<{ message: string; email: string; otp?: string }>("/auth/signup", {
+    const res = await apiClient.post<{ message: string; email: string }>("/auth/signup", {
       fullName: data.fullName.trim(),
       email: data.email.trim().toLowerCase(),
       password: data.password,
@@ -124,9 +124,6 @@ export const authService = {
       try {
         sessionStorage.setItem("auth_pending_email", data.email.trim().toLowerCase());
         sessionStorage.setItem("auth_otp_purpose", "SIGNUP");
-        if (res.otp) {
-          sessionStorage.setItem("auth_debug_otp", res.otp);
-        }
       } catch {
         // Ignore session storage errors
       }

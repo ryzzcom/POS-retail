@@ -21,7 +21,6 @@ export function OtpForm() {
     control,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<OtpSchemaInput>({
     resolver: zodResolver(otpSchema),
@@ -30,16 +29,6 @@ export function OtpForm() {
     },
     mode: "onChange",
   });
-
-  // Auto-fill OTP if stored in session during signup/resend for quick staging testing
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const debugOtp = sessionStorage.getItem("auth_debug_otp");
-      if (debugOtp && /^\d{6}$/.test(debugOtp)) {
-        setValue("otp", debugOtp, { shouldValidate: true });
-      }
-    }
-  }, [setValue]);
 
   const otpValue = watch("otp") || "";
   const isComplete = otpValue.length === 6 && /^\d{6}$/.test(otpValue);

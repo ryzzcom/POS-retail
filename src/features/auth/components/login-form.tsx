@@ -63,7 +63,17 @@ export function LoginForm() {
     } catch (err: unknown) {
       if (err instanceof Error) {
         if (err.message.includes("EMAIL_NOT_VERIFIED")) {
-          setSubmissionError("Your email has not been verified yet. Please check your inbox for the OTP verification code.");
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.setItem("auth_pending_email", data.email.trim().toLowerCase());
+              sessionStorage.setItem("auth_otp_purpose", "SIGNUP");
+            } catch {
+              // Ignore session storage errors
+            }
+          }
+          setSubmissionError(
+            "Your email has not been verified yet. Please check your Gmail inbox/spam for the OTP verification code."
+          );
         } else {
           setSubmissionError(err.message || "Invalid email or password. Please try again.");
         }
