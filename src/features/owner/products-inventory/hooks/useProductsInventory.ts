@@ -10,16 +10,13 @@ import {
   ProductsInventorySummary,
   ProductVariant,
 } from "../types/products-inventory.types";
-import { PRODUCTS_INVENTORY_MOCK_DATA } from "../constants/products-inventory-mock";
 import { ProductFormValues, AdjustStockFormValues } from "../schemas/products-inventory.schemas";
 import { exportToCsv } from "@/lib/export";
 import { productsInventoryService } from "../services/products-inventory.service";
 
 export function useProductsInventory() {
   // Master products list state
-  const [products, setProducts] = React.useState<ProductItem[]>(
-    PRODUCTS_INVENTORY_MOCK_DATA
-  );
+  const [products, setProducts] = React.useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
   // Fetch live products on mount
@@ -27,11 +24,9 @@ export function useProductsInventory() {
     try {
       setIsLoading(true);
       const res = await productsInventoryService.getProducts();
-      if (res.items && res.items.length > 0) {
-        setProducts(res.items);
-      }
+      setProducts(Array.isArray(res.items) ? res.items : []);
     } catch (err) {
-      console.warn("Failed to load products from API, using fallback:", err);
+      console.warn("Failed to load products from API:", err);
     } finally {
       setIsLoading(false);
     }

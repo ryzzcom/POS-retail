@@ -21,7 +21,12 @@ export function ShiftHeroCard({
   onCloseShift,
 }: ShiftHeroCardProps) {
   const params = useParams();
-  const storeSlug = (params?.storeSlug as string) || "noor-pret";
+  const storeSlug = (params?.storeSlug as string) || (typeof window !== "undefined" ? (() => {
+    try {
+      const s = localStorage.getItem("active_store");
+      return s ? JSON.parse(s).slug : "store";
+    } catch { return "store"; }
+  })() : "store");
   const counterId = (params?.counterId as string) || "1";
 
   return (

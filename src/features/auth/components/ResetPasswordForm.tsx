@@ -17,6 +17,17 @@ export function ResetPasswordForm() {
   const router = useRouter();
   const [submissionError, setSubmissionError] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [missingContext, setMissingContext] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const email = sessionStorage.getItem("auth_pending_email");
+      const otp = sessionStorage.getItem("auth_reset_otp");
+      if (!email || !otp) {
+        setMissingContext(true);
+      }
+    }
+  }, []);
 
   const {
     register,
@@ -60,6 +71,21 @@ export function ResetPasswordForm() {
       className="flex flex-col gap-4 sm:gap-4.5 w-full"
       noValidate
     >
+      {missingContext && (
+        <div
+          role="alert"
+          className="rounded-[12px] bg-status-warning-bg border border-status-warning/40 p-3 text-xs text-status-warning flex flex-col gap-2"
+        >
+          <span>Password reset session expired or not found. Please request a new verification code.</span>
+          <Link
+            href="/forgot-password"
+            className="font-medium underline hover:text-heading transition-colors"
+          >
+            Go to Forgot Password &rarr;
+          </Link>
+        </div>
+      )}
+
       {submissionError && (
         <div
           role="alert"

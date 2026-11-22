@@ -16,6 +16,18 @@ import { authService } from "../services/auth.service";
 export function LoginForm() {
   const router = useRouter();
   const [submissionError, setSubmissionError] = React.useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("reset") === "success" || params.get("reset") === "true") {
+        setSuccessNotice("Your password has been reset successfully. Please sign in with your new password.");
+      } else if (params.get("verified") === "true") {
+        setSuccessNotice("Your account has been verified successfully. Please sign in.");
+      }
+    }
+  }, []);
 
   const {
     register,
@@ -93,6 +105,15 @@ export function LoginForm() {
       className="flex flex-col gap-3 sm:gap-3.5 w-full"
       noValidate
     >
+      {successNotice && (
+        <div
+          role="status"
+          className="rounded-[12px] bg-status-success-bg border border-status-success/30 p-2.5 text-xs text-status-success flex items-center gap-2"
+        >
+          <span>{successNotice}</span>
+        </div>
+      )}
+
       {submissionError && (
         <div
           role="alert"

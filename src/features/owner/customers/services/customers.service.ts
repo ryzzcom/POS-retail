@@ -180,8 +180,19 @@ export const customersService = {
     address?: string;
     notes?: string;
     acceptsMarketing?: boolean;
+    acceptsPromotions?: boolean;
   }): Promise<CustomerItem> => {
-    const c = await apiClient.post<any>("/customers", data);
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      city: data.city || undefined,
+      address: data.address || undefined,
+      notes: data.notes || undefined,
+      acceptsPromotions: data.acceptsPromotions ?? data.acceptsMarketing ?? true,
+      acceptsMarketing: data.acceptsMarketing ?? data.acceptsPromotions ?? true,
+    };
+    const c = await apiClient.post<any>("/customers", payload);
     return {
       id: c.id,
       name: c.name,

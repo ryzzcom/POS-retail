@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PosHeader } from "./PosHeader";
 import { PosProductCatalog } from "./PosProductCatalog";
 import { PosCart } from "./PosCart";
@@ -36,6 +36,47 @@ export function PosTerminalView({
   onExit,
 }: PosTerminalViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const effectiveStoreSlug = useMemo(() => {
+    const fromParam = searchParams.get("storeSlug");
+    if (fromParam) return fromParam;
+    if (typeof window !== "undefined") {
+      try {
+        const storedStore = localStorage.getItem("active_store");
+        if (storedStore) {
+          const parsed = JSON.parse(storedStore);
+          if (parsed.slug) return parsed.slug;
+        }
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.storeSlug) return parsed.storeSlug;
+        }
+      } catch {}
+    }
+    return "store";
+  }, [searchParams]);
+
+  const effectiveCounterId = useMemo(() => {
+    const fromParam = searchParams.get("counterId");
+    if (fromParam) return fromParam;
+    if (typeof window !== "undefined") {
+      try {
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.assignedCounterId) return parsed.assignedCounterId;
+        }
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.assignedCounterId) return parsed.assignedCounterId;
+        }
+      } catch {}
+    }
+    return "1";
+  }, [searchParams]);
 
   // Dynamic user & counter resolution
   const [activeCashierName, setActiveCashierName] = useState<string>(() => {
@@ -122,19 +163,24 @@ export function PosTerminalView({
   }, [propShiftInfo, activeCashierName]);
 
   // Live Products State
-  const [products, setProducts] = useState<PosProduct[]>(MOCK_POS_PRODUCTS);
+  const [products, setProducts] = useState<PosProduct[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
+    setIsLoadingProducts(true);
     posService
       .getProducts()
       .then((items) => {
-        if (isMounted && items && items.length > 0) {
-          setProducts(items);
+        if (isMounted) {
+          setProducts(Array.isArray(items) ? items : []);
         }
       })
       .catch(() => {
-        // Fallback to MOCK_POS_PRODUCTS
+        if (isMounted) setProducts([]);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingProducts(false);
       });
 
     return () => {
@@ -328,7 +374,7 @@ export function PosTerminalView({
       };
 
       const checkoutRes = await posService.checkout({
-        counterId: "1",
+        counterId: effectiveCounterId,
         customerId: result.customer?.id,
         billDiscount: result.billDiscountPKR,
         pointsRedeemed: result.pointsRedeemed,
@@ -361,11 +407,11 @@ export function PosTerminalView({
   };
 
   const handleOpenMySales = () => {
-    router.push("/noor-pret/counter/1/my-sales");
+    router.push(`/${effectiveStoreSlug}/counter/${effectiveCounterId}/my-sales`);
   };
 
   const handleCloseShift = () => {
-    router.push("/noor-pret/counter/1/shift");
+    router.push(`/${effectiveStoreSlug}/counter/${effectiveCounterId}/shift`);
   };
 
   return (

@@ -49,7 +49,23 @@ export function PosHeader({
     } else if (from === "owner") {
       router.push("/dashboard");
     } else if (from === "cashier") {
-      router.push("/noor-pret/counter/1/shift");
+      let storeSlug = searchParams.get("storeSlug");
+      let counterId = searchParams.get("counterId");
+      if (!storeSlug && typeof window !== "undefined") {
+        try {
+          const storedStore = localStorage.getItem("active_store");
+          if (storedStore) storeSlug = JSON.parse(storedStore).slug;
+          const cashierSession = localStorage.getItem("cashier_session");
+          if (!storeSlug && cashierSession) storeSlug = JSON.parse(cashierSession).storeSlug;
+        } catch {}
+      }
+      if (!counterId && typeof window !== "undefined") {
+        try {
+          const cashierSession = localStorage.getItem("cashier_session");
+          if (cashierSession) counterId = JSON.parse(cashierSession).assignedCounterId;
+        } catch {}
+      }
+      router.push(`/${storeSlug || "store"}/counter/${counterId || "1"}/shift`);
     } else {
       router.back();
     }

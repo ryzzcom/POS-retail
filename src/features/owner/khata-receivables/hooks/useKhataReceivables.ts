@@ -3,11 +3,10 @@
 import * as React from "react";
 import { khataReceivablesService } from "../services/khata-receivables.service";
 import type { KhataAccount, KhataFilterOption, KhataAgingSummary } from "../types/khata.types";
-import { MOCK_KHATA_ACCOUNTS } from "../constants/khata-mock";
 import { exportToCsv } from "@/lib/export";
 
 export function useKhataReceivables() {
-  const [accounts, setAccounts] = React.useState<KhataAccount[]>(MOCK_KHATA_ACCOUNTS);
+  const [accounts, setAccounts] = React.useState<KhataAccount[]>([]);
   const [summary, setSummary] = React.useState<KhataAgingSummary>({
     totalReceivable: 0,
     totalOverdue: 0,
@@ -61,13 +60,11 @@ export function useKhataReceivables() {
         status: statusFilter,
       });
 
-      if (res.items && res.items.length > 0) {
-        setAccounts(res.items);
-        setSummary(res.agingSummary);
-        setFilterCounts(res.filterCounts);
-      }
+      setAccounts(Array.isArray(res.items) ? res.items : []);
+      if (res.agingSummary) setSummary(res.agingSummary);
+      if (res.filterCounts) setFilterCounts(res.filterCounts);
     } catch (err: unknown) {
-      console.warn("Failed to load khata accounts from API, using fallback:", err);
+      console.warn("Failed to load khata accounts from API:", err);
       setError(err instanceof Error ? err.message : "Failed to load khata");
     } finally {
       setIsLoading(false);

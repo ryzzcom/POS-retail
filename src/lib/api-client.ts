@@ -192,6 +192,21 @@ export class ApiClient {
         }
       }
 
+      if (response.status === 401 && typeof window !== "undefined") {
+        const path = window.location.pathname;
+        const isAuthRoute =
+          path.startsWith("/login") ||
+          path.startsWith("/signup") ||
+          path.startsWith("/forgot-password") ||
+          path.startsWith("/reset-password") ||
+          path.startsWith("/verify-otp") ||
+          path.startsWith("/activate-account");
+        if (!isAuthRoute) {
+          this.clearToken();
+          window.location.href = "/login";
+        }
+      }
+
       throw new ApiError(errorMessage, response.status, payload, errorName);
     }
 

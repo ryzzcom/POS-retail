@@ -73,8 +73,46 @@ export function CashierHeader({
     }
   }, [propCashierName, activeProfile, user, activeRole]);
 
-  const storeSlug = (params?.storeSlug as string) || "noor-pret";
-  const counterId = (params?.counterId as string) || "1";
+  const resolvedSlug = React.useMemo(() => {
+    if (params?.storeSlug) return params.storeSlug as string;
+    if (typeof window !== "undefined") {
+      try {
+        const storedStore = localStorage.getItem("active_store");
+        if (storedStore) {
+          const parsed = JSON.parse(storedStore);
+          if (parsed.slug) return parsed.slug;
+        }
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.storeSlug) return parsed.storeSlug;
+        }
+      } catch {}
+    }
+    return "store";
+  }, [params?.storeSlug]);
+
+  const resolvedCounter = React.useMemo(() => {
+    if (params?.counterId) return params.counterId as string;
+    if (typeof window !== "undefined") {
+      try {
+        const cashierSession = localStorage.getItem("cashier_session");
+        if (cashierSession) {
+          const parsed = JSON.parse(cashierSession);
+          if (parsed.assignedCounterId) return parsed.assignedCounterId;
+        }
+        const storedProfile = localStorage.getItem("active_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.assignedCounterId) return parsed.assignedCounterId;
+        }
+      } catch {}
+    }
+    return "1";
+  }, [params?.counterId]);
+
+  const storeSlug = resolvedSlug;
+  const counterId = resolvedCounter;
 
   const basePath = `/${storeSlug}/counter/${counterId}`;
 

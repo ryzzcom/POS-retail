@@ -7,11 +7,10 @@ import type {
   CustomerFilterOption,
   CustomerSortOption,
 } from "../types/customers.types";
-import { CUSTOMER_MOCK_DATA } from "../constants/customers-mock";
 import { exportToCsv } from "@/lib/export";
 
 export function useCustomers() {
-  const [customers, setCustomers] = React.useState<CustomerItem[]>(CUSTOMER_MOCK_DATA);
+  const [customers, setCustomers] = React.useState<CustomerItem[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -36,11 +35,9 @@ export function useCustomers() {
         tier: tierFilter !== "all" ? tierFilter : undefined,
       });
 
-      if (res.items && res.items.length > 0) {
-        setCustomers(res.items);
-      }
+      setCustomers(Array.isArray(res.items) ? res.items : []);
     } catch (err: unknown) {
-      console.warn("Failed to load customers from API, using fallback:", err);
+      console.warn("Failed to load customers from API:", err);
       setError(err instanceof Error ? err.message : "Failed to load customers");
     } finally {
       setIsLoading(false);

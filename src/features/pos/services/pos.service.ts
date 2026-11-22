@@ -58,7 +58,13 @@ export const posService = {
     phone: string;
     email?: string;
   }): Promise<PosCustomer> => {
-    return apiClient.post<PosCustomer>("/pos/customers/quick", data);
+    return apiClient.post<PosCustomer>("/pos/customers/quick", {
+      fullName: data.name,
+      name: data.name,
+      phoneNumber: data.phone,
+      phone: data.phone,
+      email: data.email || undefined,
+    });
   },
 
   checkout: async (payload: CheckoutPayload): Promise<{

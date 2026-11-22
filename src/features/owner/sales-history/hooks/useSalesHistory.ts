@@ -3,14 +3,13 @@
 import * as React from "react";
 import { salesHistoryService } from "../services/sales-history.service";
 import type { PaymentMethod, ReceiptSummary } from "../types/sales-history.types";
-import { SALES_RECEIPTS_MOCK_DATA } from "../constants/sales-history-mock";
 
 export function useSalesHistory() {
-  const [receipts, setReceipts] = React.useState<ReceiptSummary[]>(SALES_RECEIPTS_MOCK_DATA);
+  const [receipts, setReceipts] = React.useState<ReceiptSummary[]>([]);
   const [summary, setSummary] = React.useState({
-    count: SALES_RECEIPTS_MOCK_DATA.length,
-    items: SALES_RECEIPTS_MOCK_DATA.reduce((acc, curr) => acc + curr.itemCount, 0),
-    total: SALES_RECEIPTS_MOCK_DATA.reduce((acc, curr) => acc + curr.totalAmount, 0),
+    count: 0,
+    items: 0,
+    total: 0,
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -31,8 +30,8 @@ export function useSalesHistory() {
         paymentMethod: selectedMethod !== "all" ? selectedMethod : undefined,
       });
 
-      if (res.items && res.items.length > 0) {
-        setReceipts(res.items);
+      setReceipts(Array.isArray(res.items) ? res.items : []);
+      if (res.summary) {
         setSummary({
           count: res.summary.receiptsCount,
           items: res.summary.itemsCount,
@@ -40,7 +39,7 @@ export function useSalesHistory() {
         });
       }
     } catch (err: unknown) {
-      console.warn("Failed to load sales from API, using fallback:", err);
+      console.warn("Failed to load sales from API:", err);
       setError(err instanceof Error ? err.message : "Failed to load sales history");
     } finally {
       setIsLoading(false);
