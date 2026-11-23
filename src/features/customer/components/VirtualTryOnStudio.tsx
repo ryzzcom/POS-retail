@@ -24,7 +24,7 @@ import { CustomerLoginModal } from "./CustomerLoginModal";
 import type { CustomerProduct, CustomerStore, VirtualTryOnJob } from "../types/customer.types";
 
 interface VirtualTryOnStudioProps {
-  store: CustomerStore;
+  store?: CustomerStore | null;
   initialProduct?: CustomerProduct | null;
   allProducts?: CustomerProduct[];
   onClose?: () => void;
@@ -59,7 +59,7 @@ export function VirtualTryOnStudio({
     initialProduct || allProducts[0] || null
   );
   const [selectedColor, setSelectedColor] = React.useState<string>(
-    initialProduct?.colorNames[0] || "Standard"
+    (initialProduct?.colorNames || [])[0] || "Standard"
   );
   const [userPhoto, setUserPhoto] = React.useState<string>(PRESET_MODELS[0].url);
   const [customPhotoSelected, setCustomPhotoSelected] = React.useState<boolean>(false);
@@ -73,10 +73,11 @@ export function VirtualTryOnStudio({
 
   // Store membership
   const membership = React.useMemo(() => {
+    if (!store?.slug) return null;
     return memberships.find((m) => m.storeSlug === store.slug);
-  }, [memberships, store.slug]);
+  }, [memberships, store?.slug]);
 
-  const availableCredits = membership?.tryOnCredits ?? store.tryOnSignupCredits ?? 5;
+  const availableCredits = membership?.tryOnCredits ?? store?.tryOnSignupCredits ?? 5;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -114,7 +115,7 @@ export function VirtualTryOnStudio({
       setErrorMessage(null);
 
       const job = await customerService.generateTryOn({
-        storeSlug: store.slug,
+        storeSlug: store?.slug || "",
         productId: selectedProduct.id,
         selectedColor,
         userPhotoBase64: userPhoto,
@@ -133,7 +134,7 @@ export function VirtualTryOnStudio({
   const handleShareLook = async () => {
     const shareData = {
       title: `Virtual Try-On: ${selectedProduct?.name || "Apparel"}`,
-      text: `Check out how I look in this ${selectedProduct?.name} at ${store.name}!`,
+      text: `Check out how I look in this ${selectedProduct?.name} at ${store?.name || "Boutique"}!`,
       url: window.location.href,
     };
     if (navigator.share) {
@@ -238,9 +239,9 @@ export function VirtualTryOnStudio({
                 </p>
 
                 {/* Color Swatches */}
-                {selectedProduct.colorNames.length > 0 && (
+                {(selectedProduct.colorNames || []).length > 0 && (
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                    {selectedProduct.colorNames.map((color) => (
+                    {(selectedProduct.colorNames || []).map((color) => (
                       <button
                         key={color}
                         type="button"

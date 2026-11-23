@@ -9,13 +9,16 @@ import type { CustomerStore } from "../types/customer.types";
 interface BestieInviteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  store: CustomerStore;
+  store?: CustomerStore | null;
 }
 
 export function BestieInviteModal({ isOpen, onClose, store }: BestieInviteModalProps) {
   const [copied, setCopied] = React.useState(false);
 
-  const inviteUrl = typeof window !== "undefined" ? `${window.location.origin}/customer/${store.slug}` : "";
+  const inviteUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/customer/${store?.slug || ""}`
+      : "";
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteUrl);
@@ -24,7 +27,8 @@ export function BestieInviteModal({ isOpen, onClose, store }: BestieInviteModalP
   };
 
   const handleWhatsApp = () => {
-    const text = `Hey! 👯 Join me to browse and try on luxury outfits at ${store.name}! We can vote on looks and try clothes virtually with AI: ${inviteUrl}`;
+    const storeName = store?.name || "Boutique";
+    const text = `Hey! 👯 Join me to browse and try on luxury outfits at ${storeName}! We can vote on looks and try clothes virtually with AI: ${inviteUrl}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -43,8 +47,8 @@ export function BestieInviteModal({ isOpen, onClose, store }: BestieInviteModalP
             <span>Bestie Rewards Perk</span>
           </div>
           <p className="text-xs text-body leading-relaxed">
-            When your bestie connects to <strong>{store.name}</strong>, you both receive{" "}
-            <strong>+{store.tryOnSignupCredits || 5} AI Try-On Credits</strong> to test new looks together!
+            When your bestie connects to <strong>{store?.name || "our boutique"}</strong>, you both receive{" "}
+            <strong>+{store?.tryOnSignupCredits || 5} AI Try-On Credits</strong> to test new looks together!
           </p>
         </div>
 
@@ -63,7 +67,7 @@ export function BestieInviteModal({ isOpen, onClose, store }: BestieInviteModalP
             type="button"
             variant="primary"
             onClick={handleWhatsApp}
-            className="h-11 text-xs bg-[#25D366] hover:bg-[#20ba59] text-white border-0"
+            className="h-11 text-xs bg-status-success hover:bg-status-success/90 text-theme border-0"
           >
             <Send className="size-4 mr-1.5" />
             Invite on WhatsApp

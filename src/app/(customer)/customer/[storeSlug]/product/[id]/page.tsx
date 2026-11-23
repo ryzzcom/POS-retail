@@ -52,8 +52,8 @@ export default function ProductDetailPage() {
         const found = catalog.find((p) => p.id === productId);
         if (found) {
           setProduct(found);
-          setSelectedColor(found.colorNames[0] || "Standard");
-          setSelectedSize(found.availableSizes[0] || "M");
+          setSelectedColor((found.colorNames || [])[0] || "Standard");
+          setSelectedSize((found.availableSizes || [])[0] || "M");
         }
       } catch (err) {
         console.error("Failed to load product", err);
@@ -172,13 +172,13 @@ export default function ProductDetailPage() {
               )}
 
               {/* Color Swatches */}
-              {product.colorNames.length > 0 && (
+              {(product.colorNames || []).length > 0 && (
                 <div className="space-y-2">
                   <label className="text-xs font-heading font-medium text-heading block">
                     Available Colors: <span className="font-bold">{selectedColor}</span>
                   </label>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {product.colorNames.map((color) => (
+                    {(product.colorNames || []).map((color) => (
                       <button
                         key={color}
                         type="button"
@@ -197,13 +197,13 @@ export default function ProductDetailPage() {
               )}
 
               {/* Size Selector */}
-              {product.availableSizes.length > 0 && (
+              {(product.availableSizes || []).length > 0 && (
                 <div className="space-y-2">
                   <label className="text-xs font-heading font-medium text-heading block">
                     Available Sizes: <span className="font-bold">{selectedSize}</span>
                   </label>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {product.availableSizes.map((size) => (
+                    {(product.availableSizes || []).map((size) => (
                       <button
                         key={size}
                         type="button"

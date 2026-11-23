@@ -49,7 +49,6 @@ export const customerService = {
   sendOtp: async (phoneNumber: string): Promise<{ success: boolean; message: string; testOtp?: string }> => {
     return apiClient.post("/customer/auth/send-otp", {
       phone: phoneNumber,
-      phoneNumber,
     });
   },
 
@@ -66,7 +65,6 @@ export const customerService = {
       user: { id: string; phoneNumber: string; fullName: string | null; avatarUrl: string | null; preferredSizes: string[] };
     }>("/customer/auth/verify-otp", {
       phone: phoneNumber,
-      phoneNumber,
       otp,
       fullName,
     });

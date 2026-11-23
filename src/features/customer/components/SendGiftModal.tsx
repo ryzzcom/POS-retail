@@ -15,7 +15,7 @@ interface SendGiftModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: CustomerProduct | null;
-  store: CustomerStore;
+  store?: CustomerStore | null;
 }
 
 export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModalProps) {
@@ -42,8 +42,8 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
 
   React.useEffect(() => {
     if (product) {
-      setSelectedSize(product.availableSizes[0] || "M");
-      setSelectedColor(product.colorNames[0] || "Standard");
+      setSelectedSize((product.availableSizes || [])[0] || "M");
+      setSelectedColor((product.colorNames || [])[0] || "Standard");
       setCreatedGift(null);
       setErrorMessage(null);
       setCopied(false);
@@ -68,7 +68,7 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
       setIsSubmitting(true);
       setErrorMessage(null);
 
-      const res = await customerService.createGift(store.slug, {
+      const res = await customerService.createGift(store?.slug || "", {
         productId: product.id,
         selectedSize,
         selectedColor,
@@ -98,7 +98,7 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
   const handleShareWhatsApp = () => {
     if (!createdGift) return;
     const url = `${window.location.origin}/customer/gifts/${createdGift.redemptionCode}`;
-    const text = `Hey ${recipientName}! 🎁 You have received a luxury surprise gift from ${user?.fullName || "a friend"} from ${store.name}! Tap here to unbox and view it: ${url}`;
+    const text = `Hey ${recipientName}! 🎁 You have received a luxury surprise gift from ${user?.fullName || "a friend"} from ${store?.name || "Boutique"}! Tap here to unbox and view it: ${url}`;
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${recipientPhone.replace(/[^0-9]/g, "")}&text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -157,7 +157,7 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
                   type="button"
                   variant="primary"
                   onClick={handleShareWhatsApp}
-                  className="h-11 text-xs bg-[#25D366] hover:bg-[#20ba59] text-white border-0"
+                  className="h-11 text-xs bg-status-success hover:bg-status-success/90 text-theme border-0"
                 >
                   <Send className="size-4 mr-1.5" />
                   Send via WhatsApp
@@ -198,7 +198,7 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
                     Select Size
                   </label>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {product.availableSizes.map((size) => (
+                    {(product.availableSizes || []).map((size) => (
                       <button
                         key={size}
                         type="button"
@@ -220,7 +220,7 @@ export function SendGiftModal({ isOpen, onClose, product, store }: SendGiftModal
                     Select Color
                   </label>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {product.colorNames.map((color) => (
+                    {(product.colorNames || []).map((color) => (
                       <button
                         key={color}
                         type="button"

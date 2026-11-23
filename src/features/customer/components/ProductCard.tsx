@@ -27,7 +27,7 @@ export function ProductCard({
   isWishlisted = false,
 }: ProductCardProps) {
   const [selectedColor, setSelectedColor] = React.useState<string>(
-    product.colorNames[0] || "Standard"
+    (product.colorNames || [])[0] || "Standard"
   );
 
   return (
@@ -105,9 +105,9 @@ export function ProductCard({
           </div>
 
           {/* Color Chips */}
-          {product.colorNames.length > 0 && (
+          {(product.colorNames || []).length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              {product.colorNames.map((color) => {
+              {(product.colorNames || []).map((color) => {
                 const isSelected = selectedColor === color;
                 return (
                   <button
@@ -128,11 +128,11 @@ export function ProductCard({
           )}
 
           {/* Available Sizes */}
-          {product.availableSizes.length > 0 && (
+          {(product.availableSizes || []).length > 0 && (
             <div className="flex items-center gap-1 text-[11px] text-body">
               <span className="text-muted">Sizes:</span>
               <span className="font-medium text-heading">
-                {product.availableSizes.join(" · ")}
+                {(product.availableSizes || []).join(" · ")}
               </span>
             </div>
           )}

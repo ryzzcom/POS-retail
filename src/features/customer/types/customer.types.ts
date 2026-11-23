@@ -74,8 +74,11 @@ export interface OutfitSet {
   id: string;
   title: string;
   occasion: string;
-  description: string;
-  items: CustomerProduct[];
+  tagline?: string;
+  mood?: string;
+  description?: string;
+  items?: CustomerProduct[];
+  products?: CustomerProduct[];
   totalPrice: number;
 }
 
