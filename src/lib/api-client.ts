@@ -49,7 +49,16 @@ export class ApiClient {
   private inFlight = new Map<string, Promise<unknown>>();
 
   constructor(config: ApiClientConfig = {}) {
-    const rawUrl = config.baseUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+    let rawUrl = config.baseUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+      if (!isLocalHost && (rawUrl.includes("localhost") || rawUrl.includes("127.0.0.1"))) {
+        rawUrl = "https://post-retail-backend.onrender.com/api/v1";
+      }
+    }
+
     // Strip trailing slash if present
     this.baseUrl = rawUrl.replace(/\/+$/, "");
     this.defaultHeaders = {
@@ -107,8 +116,16 @@ export class ApiClient {
    * Resolves absolute request URL
    */
   private resolveUrl(endpoint: string): string {
+    let base = this.baseUrl;
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+      if (!isLocalHost && (base.includes("localhost") || base.includes("127.0.0.1"))) {
+        base = "https://post-retail-backend.onrender.com/api/v1";
+      }
+    }
     const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    return `${this.baseUrl}${cleanEndpoint}`;
+    return `${base}${cleanEndpoint}`;
   }
 
   /**

@@ -47,7 +47,10 @@ export const customerService = {
    * 1. Send OTP to customer's Pakistani mobile phone
    */
   sendOtp: async (phoneNumber: string): Promise<{ success: boolean; message: string; testOtp?: string }> => {
-    return apiClient.post("/customer/auth/send-otp", { phoneNumber });
+    return apiClient.post("/customer/auth/send-otp", {
+      phone: phoneNumber,
+      phoneNumber,
+    });
   },
 
   /**
@@ -61,7 +64,12 @@ export const customerService = {
     const res = await apiClient.post<{
       accessToken: string;
       user: { id: string; phoneNumber: string; fullName: string | null; avatarUrl: string | null; preferredSizes: string[] };
-    }>("/customer/auth/verify-otp", { phoneNumber, otp, fullName });
+    }>("/customer/auth/verify-otp", {
+      phone: phoneNumber,
+      phoneNumber,
+      otp,
+      fullName,
+    });
     if (res?.accessToken) {
       setCustomerToken(res.accessToken);
       if (typeof window !== "undefined") {
