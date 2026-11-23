@@ -32,6 +32,11 @@ interface VirtualTryOnStudioProps {
 
 const PRESET_MODELS = [
   {
+    id: "model-muscular",
+    label: "Athletic Cut (Male, 6'0\")",
+    url: "/images/models/muscular-model.png",
+  },
+  {
     id: "model-1",
     label: "Athletic Build (Male, 5'11\")",
     url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
@@ -304,7 +309,7 @@ export function VirtualTryOnStudio({
             {/* Quick Model Presets */}
             <div className="space-y-1.5 pt-1">
               <p className="text-[11px] text-body font-sans">Or choose a sample model:</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {PRESET_MODELS.map((model) => {
                   const isSelected = userPhoto === model.url;
                   return (
