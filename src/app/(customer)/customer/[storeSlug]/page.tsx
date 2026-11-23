@@ -13,6 +13,8 @@ import {
   Clock,
   Phone,
   ShieldCheck,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { CustomerHeader } from "@/features/customer/components/CustomerHeader";
 import { ProductCard } from "@/features/customer/components/ProductCard";
@@ -42,6 +44,7 @@ export default function StorefrontPage() {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [search, setSearch] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   // Active Modals State
   const [tryOnProduct, setTryOnProduct] = React.useState<CustomerProduct | null>(null);
@@ -53,36 +56,32 @@ export default function StorefrontPage() {
   const [wishlistIds, setWishlistIds] = React.useState<Set<string>>(new Set());
 
   // Load Store, Catalog & Outfits
-  React.useEffect(() => {
+  const loadData = React.useCallback(async () => {
     if (!storeSlug) return;
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
+      const [storeData, catalogData, outfitsData] = await Promise.all([
+        customerService.getStoreBySlug(storeSlug),
+        customerService.getStoreCatalog(storeSlug),
+        customerService.getStoreOutfits(storeSlug).catch(() => []),
+      ]);
 
-    let isMounted = true;
-    async function loadData() {
-      try {
-        setIsLoading(true);
-        const [storeData, catalogData, outfitsData] = await Promise.all([
-          customerService.getStoreBySlug(storeSlug),
-          customerService.getStoreCatalog(storeSlug),
-          customerService.getStoreOutfits(storeSlug).catch(() => []),
-        ]);
-
-        if (isMounted) {
-          setStore(storeData);
-          setProducts(catalogData);
-          setOutfits(outfitsData);
-        }
-      } catch (err) {
-        console.error("Failed to load store data", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+      setStore(storeData);
+      setProducts(catalogData);
+      setOutfits(outfitsData);
+    } catch (err: unknown) {
+      console.error("Failed to load store data", err);
+      const msg = err instanceof Error ? err.message : "Failed to load boutique catalog";
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
     }
-
-    loadData();
-    return () => {
-      isMounted = false;
-    };
   }, [storeSlug]);
+
+  React.useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Categories list
   const categories = React.useMemo(() => {
@@ -135,6 +134,28 @@ export default function StorefrontPage() {
       <CustomerHeader currentStore={store} activeSlug={storeSlug} />
 
       <div className="max-w-5xl mx-auto px-4 py-6 w-full space-y-6">
+        {errorMessage && (
+          <div className="p-4 rounded-[16px] bg-status-warning-bg border border-status-warning/30 flex items-center justify-between gap-3 text-xs text-status-warning font-medium shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <AlertCircle className="size-4 shrink-0" />
+              <span className="truncate">
+                {errorMessage.includes("P1001")
+                  ? "Boutique catalog is connecting to database. Tap retry to load products."
+                  : errorMessage}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadData()}
+              className="text-[11px] h-8 px-3 shrink-0 bg-card text-heading border-status-warning/40 hover:bg-theme"
+            >
+              <RefreshCw className="size-3 mr-1.5" />
+              Retry
+            </Button>
+          </div>
+        )}
+
         {/* Boutique Lookbook Hero Banner */}
         <div className="relative rounded-[24px] bg-gradient-to-r from-primary via-[#233527] to-[#121c15] text-dark-primary p-6 sm:p-8 overflow-hidden shadow-md border border-border-dark">
           <div className="relative z-10 max-w-2xl space-y-3">

@@ -209,6 +209,17 @@ export class ApiClient {
         }
       }
 
+      // Automatic resilience retry: Neon PostgreSQL cold-start wake-up
+      const isGet = !options.method || options.method.toUpperCase() === "GET";
+      const isP1001 = errorMessage.includes("P1001") || (payload && JSON.stringify(payload).includes("P1001"));
+      const isRetried = (options as { _dbRetry?: boolean })._dbRetry;
+
+      if (isGet && (isP1001 || response.status === 503) && !isRetried) {
+        // Wait 1.8 seconds for serverless database to finish waking up, then retry seamlessly
+        await new Promise((resolve) => setTimeout(resolve, 1800));
+        return this.request<T>(endpoint, { ...options, _dbRetry: true } as RequestInit);
+      }
+
       if (response.status === 401 && typeof window !== "undefined") {
         const path = window.location.pathname;
         const isAuthRoute =
